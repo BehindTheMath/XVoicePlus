@@ -137,10 +137,12 @@ public class XVoicePlusService extends IntentService {
     // mark an outgoing text as recently sent, so if it comes in via
     // round trip, we ignore it.
     private void addRecent(String text) {
-        SharedPreferences savedRecent = getRecentMessages();
-        Set<String> recentMessage = savedRecent.getStringSet("recent", new HashSet<String>());
-        recentMessage.add(text);
-        savedRecent.edit().putStringSet("recent", recentMessage).apply();
+        if(getSettings().getBoolean("settings_sync_outgoing", true)) {
+            SharedPreferences savedRecent = getRecentMessages();
+            Set<String> recentMessage = savedRecent.getStringSet("recent", new HashSet<String>());
+            recentMessage.add(text);
+            savedRecent.edit().putStringSet("recent", recentMessage).apply();
+        }
     }
 
     private boolean removeRecent(String text) {
