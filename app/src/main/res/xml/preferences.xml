@@ -42,7 +42,7 @@
         android:key="settings_sync_outgoing"
         android:title="Sync Outgoing Messages"
         android:summary="Increases data usage but syncs outgoing messages across devices."
-        android:defaultValue="true"
+        android:defaultValue="false"
         android:persistent="true"/>
 <!--    
     <SwitchPreference 

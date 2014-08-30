@@ -83,7 +83,7 @@ public class XVoicePlusService extends IntentService {
             UserPollReceiver.completeWakefulIntent(intent);
         }
         else if (MessageEventReceiver.INCOMING_VOICE.equals(intent.getAction())) {
-            if(getSettings().getBoolean("settings_sync_outgoing", true)) {
+            if(getSettings().getBoolean("settings_sync_outgoing", false)) {
                 startRefresh();
             }
             else {
@@ -92,7 +92,7 @@ public class XVoicePlusService extends IntentService {
             MessageEventReceiver.completeWakefulIntent(intent);
         }
         else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
-            if(getSettings().getBoolean("settings_sync_outgoing", true)) {
+            if(getSettings().getBoolean("settings_sync_outgoing", false)) {
                 startRefresh();
             }
             BootCompletedReceiver.completeWakefulIntent(intent);
@@ -137,7 +137,7 @@ public class XVoicePlusService extends IntentService {
     // mark an outgoing text as recently sent, so if it comes in via
     // round trip, we ignore it.
     private void addRecent(String text) {
-        if(getSettings().getBoolean("settings_sync_outgoing", true)) {
+        if(getSettings().getBoolean("settings_sync_outgoing", false)) {
             SharedPreferences savedRecent = getRecentMessages();
             Set<String> recentMessage = savedRecent.getStringSet("recent", new HashSet<String>());
             recentMessage.add(text);
