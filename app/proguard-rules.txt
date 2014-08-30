@@ -1,1 +1,2 @@
 -dontobfuscate
+-keep public class com.runnirr.xvoiceplus.XVoicePlus
