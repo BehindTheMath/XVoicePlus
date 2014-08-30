@@ -73,17 +73,27 @@ public class XVoicePlusService extends IntentService {
             return;
         }
         Log.d(TAG, "Handling intent for action " + intent.getAction());
+
         // handle an outgoing sms
         if (MessageEventReceiver.OUTGOING_SMS.equals(intent.getAction())) {
             handleOutgoingSms(intent);
+            if(getSettings().getBoolean("settings_sync_on_send", false)) {
+                Log.d(TAG, "Sync on send enabled.");
+                startRefresh();
+            }
             MessageEventReceiver.completeWakefulIntent(intent);
         }
+
+        // polling
         else if (UserPollReceiver.USER_POLL.equals(intent.getAction())) {
             startRefresh();
             UserPollReceiver.completeWakefulIntent(intent);
         }
+
+        // incoming
         else if (MessageEventReceiver.INCOMING_VOICE.equals(intent.getAction())) {
-            if(getSettings().getBoolean("settings_sync_outgoing", false)) {
+            if(getSettings().getBoolean("settings_sync_on_receive", false)) {
+                Log.d(TAG, "Sync on receive enabled");
                 startRefresh();
             }
             else {
@@ -91,8 +101,11 @@ public class XVoicePlusService extends IntentService {
             }
             MessageEventReceiver.completeWakefulIntent(intent);
         }
+
+        // boot
         else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
-            if(getSettings().getBoolean("settings_sync_outgoing", false)) {
+            if(getSettings().getBoolean("settings_sync_on_boot", false)) {
+                Log.d(TAG, "Sync on boot enabled.");
                 startRefresh();
             }
             BootCompletedReceiver.completeWakefulIntent(intent);
@@ -137,12 +150,10 @@ public class XVoicePlusService extends IntentService {
     // mark an outgoing text as recently sent, so if it comes in via
     // round trip, we ignore it.
     private void addRecent(String text) {
-        if(getSettings().getBoolean("settings_sync_outgoing", false)) {
             SharedPreferences savedRecent = getRecentMessages();
             Set<String> recentMessage = savedRecent.getStringSet("recent", new HashSet<String>());
             recentMessage.add(text);
             savedRecent.edit().putStringSet("recent", recentMessage).apply();
-        }
     }
 
     private boolean removeRecent(String text) {
@@ -153,6 +164,10 @@ public class XVoicePlusService extends IntentService {
             return true;
         }
         return false;
+    }
+
+    private void clearRecent() {
+        getRecentMessages().edit().putStringSet("recent", new HashSet<String>());
     }
 
     // send an outgoing sms event via google voice
@@ -263,9 +278,14 @@ public class XVoicePlusService extends IntentService {
             message.message = intent.getExtras().getString("call_content");
             message.phoneNumber = intent.getExtras().getString("sender_address");
             message.date = Long.valueOf(intent.getExtras().getString("call_time"));
-            markReadIfNeeded(message);
             getAppSettings().edit().putLong("timestamp", message.date).apply();
+            clearRecent();
             synthesizeMessage(message);
+            try {
+                mGVManager.markGvMessageRead(message.id, 1);
+            } catch (Exception e) {
+                Log.w(TAG, "Error marking message as read. ID: " + message.id, e);
+            }
         }
         else Log.w(TAG, "Attempt to synthesize message from unknown/invalid intent");
     }

@@ -13,16 +13,6 @@
         android:title="@string/account"
         android:persistent="true"/>
 
-    <ListPreference
-        android:dependency="settings_enabled"
-        android:key="settings_polling_frequency"
-        android:title="@string/settings_polling_frequency"
-        android:entries="@array/polling_frequency_choices"
-        android:entryValues="@array/polling_frequency_values"
-        android:defaultValue="@string/default_polling_frequency"
-        android:summary="Poll google servers to sync both incoming and outgoing messages"
-        android:persistent="true"/>
-
     <EditTextPreference
         android:dependency="settings_enabled"
         android:key="settings_incoming_prefix"
@@ -37,13 +27,44 @@
         android:defaultValue="@string/empty"
         android:persistent="true"/>
 
-    <CheckBoxPreference
-        android:dependency="settings_enabled"
-        android:key="settings_sync_outgoing"
-        android:title="Sync Outgoing Messages"
-        android:summary="Increases data usage but syncs outgoing messages across devices."
-        android:defaultValue="false"
-        android:persistent="true"/>
+    <PreferenceCategory
+        android:title="Sync">
+
+
+        <ListPreference
+                android:dependency="settings_enabled"
+                android:key="settings_polling_frequency"
+                android:title="@string/settings_polling_frequency"
+                android:entries="@array/polling_frequency_choices"
+                android:entryValues="@array/polling_frequency_values"
+                android:defaultValue="@string/default_polling_frequency"
+                android:summary="Sync after time has elapsed."
+                android:persistent="true"/>
+
+        <CheckBoxPreference
+            android:dependency="settings_enabled"
+            android:key="settings_sync_on_receive"
+            android:title="Sync on receive"
+            android:summary="Sync when a message arrives"
+            android:defaultValue="false"
+            android:persistent="true"/>
+
+        <CheckBoxPreference
+            android:dependency="settings_enabled"
+            android:key="settings_sync_on_send"
+            android:title="Sync on send"
+            android:summary="Sync after sending a message"
+            android:defaultValue="false"
+            android:persistent="true"/>
+
+        <CheckBoxPreference
+                android:dependency="settings_enabled"
+                android:key="settings_sync_on_boot"
+                android:title="Sync on boot"
+                android:summary="Sync after boot"
+                android:defaultValue="false"
+                android:persistent="true"/>
+    </PreferenceCategory>
 <!--    
     <SwitchPreference 
         android:dependency="settings_enabled"
