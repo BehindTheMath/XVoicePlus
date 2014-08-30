@@ -29,7 +29,7 @@
 
     <PreferenceCategory
         android:title="Sync">
-
+        <Preference android:layout="@layout/sync_summary"/>
 
         <ListPreference
                 android:dependency="settings_enabled"

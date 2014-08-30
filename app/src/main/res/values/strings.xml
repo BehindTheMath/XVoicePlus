@@ -31,6 +31,11 @@
     <string name="settings_incoming_prefix">Incoming Message Prefix</string>
     <string name="settings_incoming_suffix">Incoming Message Suffix</string>
 
+    <string name="settings_sync_summary">
+Synchronize messages across devices.\n
+<i>When all sync settings are disabled, messages will still arrive via GV push notifications.</i>
+    </string>
+
     <string-array name="polling_frequency_choices">
         <item name="never">Never</item>
         <!-- <item name="10_seconds">10 seconds</item> -->
