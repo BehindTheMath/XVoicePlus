@@ -1,20 +1,14 @@
 package com.runnirr.xvoiceplus.ui;
 
-import com.runnirr.xvoiceplus.R;
-import com.runnirr.xvoiceplus.XVoicePlusService;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceScreen;
+import android.preference.*;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import com.runnirr.xvoiceplus.R;
+import com.runnirr.xvoiceplus.XVoicePlusService;
 import org.jetbrains.annotations.NotNull;
 
 public class XVoicePlusFragment extends PreferenceFragment {

@@ -1,8 +1,8 @@
 package com.runnirr.xvoiceplus.gv;
 
-import java.util.ArrayList;
-
 import com.google.gson.annotations.SerializedName;
+
+import java.util.ArrayList;
 
 public class GvResponse {
 

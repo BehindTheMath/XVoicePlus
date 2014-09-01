@@ -1,12 +1,11 @@
 package com.runnirr.xvoiceplus.ui;
 
-import com.runnirr.xvoiceplus.receivers.UserPollReceiver;
-
 import android.app.Activity;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceScreen;
+import com.runnirr.xvoiceplus.receivers.UserPollReceiver;
 
 public class XVoicePlusSetup extends Activity implements OnSharedPreferenceChangeListener {
 

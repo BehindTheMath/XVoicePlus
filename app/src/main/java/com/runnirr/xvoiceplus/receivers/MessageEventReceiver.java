@@ -3,7 +3,6 @@ package com.runnirr.xvoiceplus.receivers;
 import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
-
 import com.runnirr.xvoiceplus.XVoicePlusService;
 
 public class MessageEventReceiver extends XVoicePlusReceiver {

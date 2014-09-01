@@ -1,14 +1,13 @@
 package com.runnirr.xvoiceplus.receivers;
 
-import com.runnirr.xvoiceplus.R;
-import com.runnirr.xvoiceplus.XVoicePlusService;
-
 import android.app.AlarmManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 import android.util.Log;
+import com.runnirr.xvoiceplus.R;
+import com.runnirr.xvoiceplus.XVoicePlusService;
 
 public class UserPollReceiver extends XVoicePlusReceiver {
     private static final String TAG = UserPollReceiver.class.getName();

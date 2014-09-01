@@ -1,9 +1,5 @@
 package com.runnirr.xvoiceplus.gv;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.accounts.AccountManagerCallback;
@@ -13,17 +9,19 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
-import android.preference.PreferenceManager;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.util.Log;
-
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.koushikdutta.ion.Ion;
 import com.runnirr.xvoiceplus.XVoicePlusService;
 import com.runnirr.xvoiceplus.gv.GvResponse.Conversation;
 import com.runnirr.xvoiceplus.gv.GvResponse.Payload;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class GoogleVoiceManager {
     private static final String TAG = GoogleVoiceManager.class.getName();

@@ -13,7 +13,7 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<resources xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
+<resources>
     <string name="app_name">XVoice+</string>
     <string name="info">XVoice+ enables all apps to send SMS messages through Google Voice</string>
     <string name="disable">Disabled</string>

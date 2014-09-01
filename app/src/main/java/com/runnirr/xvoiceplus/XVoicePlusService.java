@@ -10,7 +10,6 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
-
 import com.runnirr.xvoiceplus.gv.GoogleVoiceManager;
 import com.runnirr.xvoiceplus.gv.GvResponse.Conversation;
 import com.runnirr.xvoiceplus.gv.GvResponse.Message;
@@ -19,14 +18,7 @@ import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
 import com.runnirr.xvoiceplus.receivers.UserPollReceiver;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
+import java.util.*;
 
 
 public class XVoicePlusService extends IntentService {

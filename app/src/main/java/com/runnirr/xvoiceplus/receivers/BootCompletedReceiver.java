@@ -3,7 +3,6 @@ package com.runnirr.xvoiceplus.receivers;
 import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
-
 import com.runnirr.xvoiceplus.R;
 import com.runnirr.xvoiceplus.XVoicePlusService;
 

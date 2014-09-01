@@ -1,7 +1,5 @@
 package com.runnirr.xvoiceplus.ui;
 
-import com.runnirr.xvoiceplus.gv.GoogleVoiceManager;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.content.Context;
@@ -10,6 +8,7 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.util.AttributeSet;
 import android.util.Log;
+import com.runnirr.xvoiceplus.gv.GoogleVoiceManager;
 
 public class AccountListPreferences extends ListPreference {
 
