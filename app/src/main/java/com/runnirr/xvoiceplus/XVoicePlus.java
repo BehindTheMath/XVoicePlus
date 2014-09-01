@@ -1,42 +1,27 @@
 package com.runnirr.xvoiceplus;
 
 
-import static com.runnirr.xvoiceplus.hooks.XSmsMethodHook.HookType;
-import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
-import static de.robv.android.xposed.XposedHelpers.findClass;
-import static de.robv.android.xposed.XposedHelpers.getObjectField;
-import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
-import static de.robv.android.xposed.XposedHelpers.getStaticObjectField;
-import static de.robv.android.xposed.XposedHelpers.setIntField;
-import static de.robv.android.xposed.XposedHelpers.setObjectField;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-
-import android.os.Bundle;
-import com.runnirr.xvoiceplus.hooks.XSmsMethodHook;
-import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
-
 import android.annotation.TargetApi;
-import android.app.AndroidAppHelper;
 import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.XResources;
 import android.os.Build;
+import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
-import de.robv.android.xposed.IXposedHookLoadPackage;
-import de.robv.android.xposed.IXposedHookZygoteInit;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
-import de.robv.android.xposed.XposedBridge;
+import com.runnirr.xvoiceplus.hooks.XSmsMethodHook;
+import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
+import de.robv.android.xposed.*;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+
+import static com.runnirr.xvoiceplus.hooks.XSmsMethodHook.HookType;
+import static de.robv.android.xposed.XposedHelpers.*;
 
 public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     public static final String TAG = XVoicePlus.class.getName();
@@ -194,6 +179,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     private void hookSendSms(){
+        // AOSP
         findAndHookMethod(SmsManager.class, "sendTextMessage",
                 String.class, String.class, String.class, PendingIntent.class, PendingIntent.class,
                 new XSmsMethodHook(this, HookType.AOSP));
@@ -202,10 +188,18 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                 String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
                 new XSmsMethodHook(this, HookType.AOSP));
 
-        // Touchwiz based ROMs
+        // Touchwiz
         findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
                 String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                Object.class, Object.class, Object.class,
+                Boolean.class, Integer.class, Integer.class, Integer.class,
+                new XSmsMethodHook(this, HookType.TOUCHWIZ));
+        findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
+                String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
+                Boolean.class, Integer.class, Integer.class, Integer.class, Integer.class,
+                new XSmsMethodHook(this, HookType.TOUCHWIZ));
+        findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
+                String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
+                String.class, Integer.class,
                 new XSmsMethodHook(this, HookType.TOUCHWIZ));
     }
 
