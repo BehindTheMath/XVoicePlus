@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.content.res.XResources;
 import android.os.Build;
 import android.os.Bundle;
-import android.telephony.SmsManager;
 import android.telephony.SmsMessage;
 import android.util.Log;
 import com.runnirr.xvoiceplus.hooks.XSmsMethodHook;
@@ -17,6 +16,7 @@ import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
 import de.robv.android.xposed.*;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -29,7 +29,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
     private static final String XVOICE_PLUS_PACKAGE = "com.runnirr.xvoiceplus";
     private static final String SENSE_SMS_PACKAGE = "com.htc.wrap.android.telephony";
-    //private static final String TOUCHWIZ_SMS_PACKAGE = "android.telephony";
+    private static final String SMS_PACKAGE = "android.telephony";
 
     private static final String PERM_BROADCAST_SMS = "android.permission.BROADCAST_SMS";
 
@@ -77,9 +77,9 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public void initZygote(StartupParam startupParam) {
         XResources.setSystemWideReplacement("android", "bool", "config_sms_capable", true);
 
-        hookSendSms();
         hookXVoicePlusPermission();
         hookSmsMessage();
+        hookSendSms();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
             hookAppOps();
         }
@@ -180,27 +180,46 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
     private void hookSendSms(){
         // AOSP
-        findAndHookMethod(SmsManager.class, "sendTextMessage",
-                String.class, String.class, String.class, PendingIntent.class, PendingIntent.class,
-                new XSmsMethodHook(this, HookType.AOSP));
+        Class clazz = findClass("android.telephony.SmsManager", null);
+        ArrayList<Method> hookedMethods = new ArrayList<Method>();
 
-        findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
-                String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                new XSmsMethodHook(this, HookType.AOSP));
+        try {
+            hookedMethods.add((Method) findAndHookMethod(clazz, "sendTextMessage",
+                    String.class, String.class, String.class, PendingIntent.class, PendingIntent.class,
+                    new XSmsMethodHook(this, HookType.AOSP)).getHookedMethod());
+            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+                    String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
+                    new XSmsMethodHook(this, HookType.AOSP)).getHookedMethod());
+            Log.d(TAG, "Hooked standard SmsManager methods");
+        } catch(NoSuchMethodError ignored){
+            Log.w(TAG, "Failed to hook standard SmsManager methods");
+        }
 
         // Touchwiz
-        findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
-                String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                Boolean.class, Integer.class, Integer.class, Integer.class,
-                new XSmsMethodHook(this, HookType.TOUCHWIZ));
-        findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
-                String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                Boolean.class, Integer.class, Integer.class, Integer.class, Integer.class,
-                new XSmsMethodHook(this, HookType.TOUCHWIZ));
-        findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
-                String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                String.class, Integer.class,
-                new XSmsMethodHook(this, HookType.TOUCHWIZ));
+        try {
+            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+                    String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
+                    Boolean.class, Integer.class, Integer.class, Integer.class,
+                    new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
+            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+                    String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
+                    Boolean.class, Integer.class, Integer.class, Integer.class, Integer.class,
+                    new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
+            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+                    String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
+                    String.class, Integer.class,
+                    new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
+            Log.d(TAG, "Hooked touchwiz SmsManager methods");
+        } catch(NoSuchMethodError ignored) {}
+
+        for(Method method : hookedMethods) {
+            if(method == null) continue;
+            ArrayList<String> paramTypes = new ArrayList<String>();
+            for(Class type : method.getParameterTypes()) paramTypes.add(type.getSimpleName());
+            Log.d(TAG, String.format("Hooked method %s.%s(%s)",
+                    method.getDeclaringClass().getCanonicalName(),
+                    method.getName(), paramTypes));
+        }
     }
 
     // Sense based ROMs
