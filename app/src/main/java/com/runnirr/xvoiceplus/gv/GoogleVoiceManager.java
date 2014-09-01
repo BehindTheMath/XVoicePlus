@@ -161,8 +161,8 @@ public class GoogleVoiceManager {
     // refresh the messages that were on the server
     public List<Conversation> retrieveMessages() throws Exception {
         String account = getAccount();
-        Log.d(TAG, "Retrieving messages for account " + account);
         if (account == null) {
+            Log.d(TAG, "Account not set");
             return new ArrayList<Conversation>();
         }
 
