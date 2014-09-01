@@ -44,6 +44,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
     private static final String XVOICE_PLUS_PACKAGE = "com.runnirr.xvoiceplus";
     private static final String SENSE_SMS_PACKAGE = "com.htc.wrap.android.telephony";
+    //private static final String TOUCHWIZ_SMS_PACKAGE = "android.telephony";
 
     private static final String PERM_BROADCAST_SMS = "android.permission.BROADCAST_SMS";
 
@@ -200,6 +201,12 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
                 String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
                 new XSmsMethodHook(this, HookType.AOSP));
+
+        // Touchwiz based ROMs
+        findAndHookMethod(SmsManager.class, "sendMultipartTextMessage",
+                String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
+                Object.class, Object.class, Object.class,
+                new XSmsMethodHook(this, HookType.TOUCHWIZ));
     }
 
     // Sense based ROMs

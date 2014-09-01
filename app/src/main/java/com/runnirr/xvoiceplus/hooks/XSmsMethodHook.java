@@ -36,6 +36,7 @@ public class XSmsMethodHook extends XC_MethodHook {
 
     @Override
     protected void beforeHookedMethod(final MethodHookParam param) throws Throwable {
+        Log.d(TAG, String.format("Hooked %s.%s", param.thisObject.getClass().getCanonicalName(), param.method.getName()));
         if (xVoicePlus.isEnabled()) {
             Log.d(TAG, "Sending via google voice");
             methodParameters = param;
