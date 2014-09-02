@@ -1,8 +1,11 @@
 apply plugin: 'android'
+
 if(project.hasProperty("XVoicePlus.signing")
         && new File(project.property("XVoicePlus.signing") + ".gradle").exists()) {
+    println "Got signing config."
     apply from: project.property("XVoicePlus.signing") + ".gradle";
 }
+
 android {
     compileSdkVersion 19
     buildToolsVersion '20.0.0'
@@ -12,10 +15,25 @@ android {
         targetSdkVersion 19
     }
 
+    applicationVariants.all { variant ->
+        def commitHash
+        if(variant.name == "release") {
+            commitHash = "cmd /c git describe abbrev=0".execute().text.trim()
+        } else commitHash = "cmd /c git rev-parse --short=5 HEAD".execute().text.trim()
+        def file = variant.outputFile
+        variant.outputFile = new File(file.parent, project.property("XVoicePlus.projectName") + "-" + commitHash + "-" + variant.buildType.name.toUpperCase() + ".apk")
+    }
+
     buildTypes {
         release {
-            runProguard true
+            setRunProguard true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+            setZipAlign true
+            signingConfig signingConfigs.release
+        }
+
+        snapshot.initWith(buildTypes.release)
+        snapshot {
         }
     }
 }
