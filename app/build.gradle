@@ -2,7 +2,6 @@ apply plugin: 'android'
 
 if(project.hasProperty("XVoicePlus.signing")
         && new File(project.property("XVoicePlus.signing") + ".gradle").exists()) {
-    println "Got signing config."
     apply from: project.property("XVoicePlus.signing") + ".gradle";
 }
 

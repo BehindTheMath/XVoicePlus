@@ -199,15 +199,15 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         try {
             hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
                     String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                    Boolean.class, Integer.class, Integer.class, Integer.class,
+                    boolean.class, int.class, int.class, int.class,
                     new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
             hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
                     String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                    Boolean.class, Integer.class, Integer.class, Integer.class, Integer.class,
+                    boolean.class, int.class, int.class, int.class, int.class,
                     new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
             hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
                     String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                    String.class, Integer.class,
+                    String.class, int.class,
                     new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
             Log.d(TAG, "Hooked touchwiz SmsManager methods");
         } catch(NoSuchMethodError ignored) {}
