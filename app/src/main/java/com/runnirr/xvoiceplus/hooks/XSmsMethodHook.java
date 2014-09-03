@@ -20,17 +20,10 @@ import static de.robv.android.xposed.XposedHelpers.*;
  * Created by Justin Baldwin on 8/31/2014.
  */
 public class XSmsMethodHook extends XC_MethodHook {
-    public static enum HookType {
-        AOSP, SENSE, TOUCHWIZ
-    }
-
-    private final HookType hookType;
     private final XVoicePlus xVoicePlus;
     private final String TAG = XVoicePlus.TAG;
-    private MethodHookParam methodParameters = null;
 
-    public XSmsMethodHook(XVoicePlus xVoicePlus, HookType hookType) {
-        this.hookType = hookType;
+    public XSmsMethodHook(XVoicePlus xVoicePlus) {
         this.xVoicePlus = xVoicePlus;
     }
 
@@ -39,8 +32,7 @@ public class XSmsMethodHook extends XC_MethodHook {
         Log.d(TAG, String.format("Hooked %s.%s", param.thisObject.getClass().getCanonicalName(), param.method.getName()));
         if (xVoicePlus.isEnabled()) {
             Log.d(TAG, "Sending via google voice");
-            methodParameters = param;
-            attemptSendViaGoogleVoice(methodParameters);
+            attemptSendViaGoogleVoice(param);
             // If we get here the user wants to use GV so stop.
             param.setResult(null);
         } else {
@@ -56,29 +48,25 @@ public class XSmsMethodHook extends XC_MethodHook {
         ArrayList<PendingIntent> sentIntents;
         ArrayList<PendingIntent> deliveryIntents;
 
-        // Grab needed parameters from hook
-        switch(hookType) {
-            default:
-                destAddr = (String)param.args[0];
-                scAddr = (String) param.args[1];
+        destAddr = (String)param.args[0];
+        scAddr = (String) param.args[1];
 
-                if (param.args[2] instanceof String) {
-                    texts = new ArrayList<String>(Collections.singletonList((String) param.args[2]));
-                } else {
-                    texts = (ArrayList<String>) param.args[2];
-                }
+        if (param.args[2] instanceof String) {
+            texts = new ArrayList<String>(Collections.singletonList((String) param.args[2]));
+        } else {
+            texts = (ArrayList<String>) param.args[2];
+        }
 
-                if (param.args[3] instanceof PendingIntent) {
-                    sentIntents = new ArrayList<PendingIntent>(Collections.singletonList((PendingIntent) param.args[3]));
-                } else {
-                    sentIntents = (ArrayList<PendingIntent>) param.args[3];
-                }
+        if (param.args[3] instanceof PendingIntent) {
+            sentIntents = new ArrayList<PendingIntent>(Collections.singletonList((PendingIntent) param.args[3]));
+        } else {
+            sentIntents = (ArrayList<PendingIntent>) param.args[3];
+        }
 
-                if (param.args[4] instanceof PendingIntent) {
-                    deliveryIntents = new ArrayList<PendingIntent>(Collections.singletonList((PendingIntent) param.args[4]));
-                } else {
-                    deliveryIntents = (ArrayList<PendingIntent>) param.args[4];
-                }
+        if (param.args[4] instanceof PendingIntent) {
+            deliveryIntents = new ArrayList<PendingIntent>(Collections.singletonList((PendingIntent) param.args[4]));
+        } else {
+            deliveryIntents = (ArrayList<PendingIntent>) param.args[4];
         }
 
         try {
@@ -143,12 +131,6 @@ public class XSmsMethodHook extends XC_MethodHook {
                 context = (Context) callMethod(activityThread, "getSystemContext");
             }
         }
-
-        // Should be guaranteed to work for Sense based ROMs
-        /*if(context == null && hookType == HookType.SENSE) {
-            Log.i(TAG, "Trying to get context from Sense SmsMessageSender");
-            context = (Context) getObjectField(methodParameters.thisObject, "mContext");
-        }*/
 
         return context;
     }

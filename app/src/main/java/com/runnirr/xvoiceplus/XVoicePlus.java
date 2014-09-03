@@ -16,25 +16,29 @@ import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
 import de.robv.android.xposed.*;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import static com.runnirr.xvoiceplus.hooks.XSmsMethodHook.HookType;
 import static de.robv.android.xposed.XposedHelpers.*;
 
 public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     public static final String TAG = XVoicePlus.class.getName();
 
-    public static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
+    private static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
     private static final String XVOICE_PLUS_PACKAGE = "com.runnirr.xvoiceplus";
-    private static final String SENSE_SMS_PACKAGE = "com.htc.wrap.android.telephony";
-    private static final String RECEIVER_SERVICE_PACKAGE = "com.android.mms";
-
+    private static final String SENSE_SMS_PACKAGE = "com.htc.sense.mms";
+    private static final String SMS_PACKAGE = "com.android.mms";
     private static final String PERM_BROADCAST_SMS = "android.permission.BROADCAST_SMS";
+    private static boolean TOUCHWIZ = false;
+
+    private XSmsMethodHook smsManagerHook;
 
     public boolean isEnabled() {
         return new XSharedPreferences("com.runnirr.xvoiceplus").getBoolean("settings_enabled", true);
+    }
+
+    public XVoicePlus() {
+        smsManagerHook = new XSmsMethodHook(this);
     }
 
     @Override
@@ -43,23 +47,15 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
             Log.d(TAG, "Hooking google voice push notifications");
             hookGoogleVoice(lpparam);
         }
-        // Sense based ROMs
+        // Sense
         else if(lpparam.packageName.equals(SENSE_SMS_PACKAGE)) {
             Log.d(TAG, "Hooking sense SMS wrapper");
-            hookSendSmsHtc(lpparam);
+            hookSendSmsSense(lpparam);
         }
-        // Touchwiz spin fix
-        else if(lpparam.packageName.equals(RECEIVER_SERVICE_PACKAGE)) {
+        // Touchwiz
+        else if(TOUCHWIZ && lpparam.packageName.equals(SMS_PACKAGE)) {
             Log.d(TAG, "Hooking SmsReceiverService");
-            findAndHookMethod("com.android.mms.transaction.SmsReceiverService", lpparam.classLoader,
-                    "handleSmsSent", Intent.class, int.class,
-                    new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            Log.d(TAG, "No spinning plox");
-                            ((Intent) param.args[0]).putExtra("LastSentMsg", true);
-                        }
-                    });
+            hookSendSmsTouchwiz(lpparam);
         }
     }
 
@@ -92,7 +88,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
         hookXVoicePlusPermission();
         hookSmsMessage();
-        hookSendSms();
+        hookSmsManager();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
             hookAppOps();
         }
@@ -191,55 +187,62 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         });
     }
 
-    private void hookSendSms(){
+    private void hookSmsManager(){
         // AOSP
         Class clazz = findClass("android.telephony.SmsManager", null);
-        ArrayList<Method> hookedMethods = new ArrayList<Method>();
         try {
-            hookedMethods.add((Method) findAndHookMethod(clazz, "sendTextMessage",
+            findAndHookMethod(clazz, "sendTextMessage",
                     String.class, String.class, String.class, PendingIntent.class, PendingIntent.class,
-                    new XSmsMethodHook(this, HookType.AOSP)).getHookedMethod());
-            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+                    smsManagerHook);
+            findAndHookMethod(clazz, "sendMultipartTextMessage",
                     String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                    new XSmsMethodHook(this, HookType.AOSP)).getHookedMethod());
+                    smsManagerHook);
             Log.d(TAG, "Hooked standard SmsManager methods");
-        } catch(NoSuchMethodError ignored){
+        } catch(NoSuchMethodError ex) {
             Log.w(TAG, "Failed to hook standard SmsManager methods");
         }
 
         // Touchwiz
         try {
-            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+            findAndHookMethod(clazz, "sendMultipartTextMessage",
                     String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
                     boolean.class, int.class, int.class, int.class,
-                    new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
-            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+                    smsManagerHook);
+            findAndHookMethod(clazz, "sendMultipartTextMessage",
                     String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
                     boolean.class, int.class, int.class, int.class, int.class,
-                    new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
-            hookedMethods.add((Method) findAndHookMethod(clazz, "sendMultipartTextMessage",
+                    smsManagerHook);
+            findAndHookMethod(clazz, "sendMultipartTextMessage",
                     String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
                     String.class, int.class,
-                    new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
-            Log.d(TAG, "Hooked touchwiz SmsManager methods");
-
-        } catch(NoSuchMethodError ignored) {}
-
-        for(Method method : hookedMethods) {
-            if(method == null) continue;
-            ArrayList<String> paramTypes = new ArrayList<String>();
-            for(Class type : method.getParameterTypes()) paramTypes.add(type.getSimpleName());
-            Log.d(TAG, String.format("Hooked method %s.%s(%s)",
-                    method.getDeclaringClass().getCanonicalName(),
-                    method.getName(), paramTypes));
+                    smsManagerHook);
+            TOUCHWIZ = true;
+            Log.d(TAG, "Hooked Touchwiz SmsManager methods");
+        } catch(NoSuchMethodError ignored) {
+            Log.d(TAG, "Touchwiz SmsManager methods not hooked.");
         }
     }
 
     // Sense based ROMs
-    private void hookSendSmsHtc(LoadPackageParam lpparam) {
-        findAndHookMethod(SENSE_SMS_PACKAGE + ".HtcWrapIfSmsManager", lpparam.classLoader, "sendMultipartTextMessage",
+    private void hookSendSmsSense(LoadPackageParam lpparam) {
+        Class clazz = findClass("com.htc.wrap.android.telephony.HtcWrapIfSmsManager", lpparam.classLoader);
+        findAndHookMethod(clazz, "sendMultipartTextMessage",
                 String.class, String.class, ArrayList.class, ArrayList.class, Bundle.class,
-                new XSmsMethodHook(this, HookType.SENSE));
+                smsManagerHook);
 
+    }
+
+    // Touchwiz based ROMs
+    private void hookSendSmsTouchwiz(LoadPackageParam lpparam) {
+        Class clazz = findClass(SMS_PACKAGE + ".transaction.SmsReceiverService", lpparam.classLoader);
+        // Fixes spinning in touchwiz stock
+        findAndHookMethod(clazz, "handleSmsSent",
+                Intent.class, int.class,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        ((Intent) param.args[0]).putExtra("LastSentMsg", true);
+                    }
+                });
     }
 }
