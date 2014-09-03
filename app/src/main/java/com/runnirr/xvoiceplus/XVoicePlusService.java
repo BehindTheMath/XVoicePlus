@@ -190,7 +190,6 @@ public class XVoicePlusService extends IntentService {
             mGVManager.refreshAuth();
             mGVManager.sendGvMessage(destAddr, text);
             addRecent(text);
-
             success(sentIntents);
         }
         catch (Exception e) {

@@ -16,3 +16,4 @@ gradlew.bat
 .idea/uiDesigner.xml
 .idea/libraries
 *.jar
+*/lib

@@ -29,7 +29,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
     private static final String XVOICE_PLUS_PACKAGE = "com.runnirr.xvoiceplus";
     private static final String SENSE_SMS_PACKAGE = "com.htc.wrap.android.telephony";
-    private static final String SMS_PACKAGE = "android.telephony";
+    private static final String RECEIVER_SERVICE_PACKAGE = "com.android.mms";
 
     private static final String PERM_BROADCAST_SMS = "android.permission.BROADCAST_SMS";
 
@@ -47,6 +47,19 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         else if(lpparam.packageName.equals(SENSE_SMS_PACKAGE)) {
             Log.d(TAG, "Hooking sense SMS wrapper");
             hookSendSmsHtc(lpparam);
+        }
+        // Touchwiz spin fix
+        else if(lpparam.packageName.equals(RECEIVER_SERVICE_PACKAGE)) {
+            Log.d(TAG, "Hooking SmsReceiverService");
+            findAndHookMethod("com.android.mms.transaction.SmsReceiverService", lpparam.classLoader,
+                    "handleSmsSent", Intent.class, int.class,
+                    new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                            Log.d(TAG, "No spinning plox");
+                            ((Intent) param.args[0]).putExtra("LastSentMsg", true);
+                        }
+                    });
         }
     }
 
@@ -182,7 +195,6 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         // AOSP
         Class clazz = findClass("android.telephony.SmsManager", null);
         ArrayList<Method> hookedMethods = new ArrayList<Method>();
-
         try {
             hookedMethods.add((Method) findAndHookMethod(clazz, "sendTextMessage",
                     String.class, String.class, String.class, PendingIntent.class, PendingIntent.class,
@@ -210,6 +222,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                     String.class, int.class,
                     new XSmsMethodHook(this, HookType.TOUCHWIZ)).getHookedMethod());
             Log.d(TAG, "Hooked touchwiz SmsManager methods");
+
         } catch(NoSuchMethodError ignored) {}
 
         for(Method method : hookedMethods) {

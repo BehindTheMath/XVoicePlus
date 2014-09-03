@@ -79,16 +79,6 @@ public class XSmsMethodHook extends XC_MethodHook {
                 } else {
                     deliveryIntents = (ArrayList<PendingIntent>) param.args[4];
                 }
-                //break;
-
-            /*case SENSE:
-                Intent intent = (Intent) getObjectField(param.thisObject, "mIntent");
-                destAddr = intent.getStringArrayListExtra("dest");
-                scAddr = intent.getStringExtra("callback");
-                texts.add(intent.getStringExtra("msg"));
-                Intent sendIntent = new Intent("com.android.mms.transaction.SEND_MESSAGE");
-                PendingIntent.getActivity((Context)getObjectField(param.thisObject, "mContext"), PendingIntent.FLAG_ONE_SHOT, )
-                */
         }
 
         try {
