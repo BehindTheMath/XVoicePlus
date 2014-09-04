@@ -389,7 +389,7 @@ public class XVoicePlusService extends IntentService {
         return(
                 getSettings().getBoolean("settings_sync_on_receive", false) |
                 getSettings().getBoolean("settings_sync_on_send", false) |
-                getSettings().getLong("settings_polling_frequency", -1) != -1
+                Long.valueOf(getSettings().getString("settings_polling_frequency", "-1")) != -1L
         );
     }
 }
