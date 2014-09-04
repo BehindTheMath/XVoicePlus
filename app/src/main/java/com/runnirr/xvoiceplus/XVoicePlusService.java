@@ -23,6 +23,15 @@ import java.util.*;
 
 public class XVoicePlusService extends IntentService {
     private static final String TAG = XVoicePlusService.class.getName();
+
+    private static final int VOICE_INCOMING_SMS = 10;
+    private static final int VOICE_OUTGOING_SMS = 11;
+
+    private static final int PROVIDER_INCOMING_SMS = 1;
+    private static final int PROVIDER_OUTGOING_SMS = 2;
+
+    private static final Uri URI_SENT = Uri.parse("content://sms/sent");
+    private static final Uri URI_RECEIVED = Uri.parse("content://sms/inbox");
     
     private GoogleVoiceManager mGVManager = new GoogleVoiceManager(this);
 
@@ -87,6 +96,7 @@ public class XVoicePlusService extends IntentService {
             if(getSettings().getBoolean("settings_sync_on_receive", false)) {
                 Log.d(TAG, "Sync on receive enabled");
                 startRefresh();
+                clearRecent();
             }
             else {
                 synthesizeMessage(intent);
@@ -159,7 +169,7 @@ public class XVoicePlusService extends IntentService {
     }
 
     private void clearRecent() {
-        getRecentMessages().edit().putStringSet("recent", new HashSet<String>());
+        getRecentMessages().edit().putStringSet("recent", new HashSet<String>()).apply();
     }
 
     // send an outgoing sms event via google voice
@@ -177,7 +187,7 @@ public class XVoicePlusService extends IntentService {
             // send it off, and note that we recently sent this message
             // for round trip tracking
             mGVManager.sendGvMessage(destAddr, text);
-            addRecent(text);
+            if(syncEnabled())addRecent(text);
             success(sentIntents);
             return;
         }
@@ -189,7 +199,7 @@ public class XVoicePlusService extends IntentService {
             // on failure, fetch info and try again
             mGVManager.refreshAuth();
             mGVManager.sendGvMessage(destAddr, text);
-            addRecent(text);
+            if(syncEnabled())addRecent(text);
             success(sentIntents);
         }
         catch (Exception e) {
@@ -197,15 +207,6 @@ public class XVoicePlusService extends IntentService {
             fail(sentIntents);
         }
     }
-
-    private static final int VOICE_INCOMING_SMS = 10;
-    private static final int VOICE_OUTGOING_SMS = 11;
-
-    private static final int PROVIDER_INCOMING_SMS = 1;
-    private static final int PROVIDER_OUTGOING_SMS = 2;
-
-    private static final Uri URI_SENT = Uri.parse("content://sms/sent");
-    private static final Uri URI_RECEIVED = Uri.parse("content://sms/inbox");
 
     boolean messageExists(Message m, Uri uri) {
         Cursor c = getContentResolver().query(uri, null, "date = ? AND body = ?",
@@ -357,6 +358,7 @@ public class XVoicePlusService extends IntentService {
             // sync up outgoing messages
             if (message.type == VOICE_OUTGOING_SMS) {
                 if (!removeRecent(message.message)) {
+                    Log.d(TAG, "Outgoing message not found in recents, inserting into SMS database.");
                     insertMessage(message);
                 }
             } else if (message.type == VOICE_INCOMING_SMS) {
@@ -381,5 +383,13 @@ public class XVoicePlusService extends IntentService {
         } catch (Exception e) {
             Log.e(TAG, "Error refreshing messages", e);
         }
+    }
+
+    public boolean syncEnabled() {
+        return(
+                getSettings().getBoolean("settings_sync_on_receive", false) |
+                getSettings().getBoolean("settings_sync_on_send", false) |
+                getSettings().getLong("settings_polling_frequency", -1) != -1
+        );
     }
 }
