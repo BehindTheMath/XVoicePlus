@@ -14,10 +14,6 @@ public class AccountListPreferences extends ListPreference {
 
     private static final String TAG = AccountListPreferences.class.getName();
 
-    public AccountListPreferences(Context context) {
-        this(context, null);
-    }
-
     public AccountListPreferences(Context context, AttributeSet attrs) {
         super(context, attrs);
 
@@ -44,7 +40,7 @@ public class AccountListPreferences extends ListPreference {
                                 final String previousAccount = prefs.getString("account", null);
                                 GoogleVoiceManager.invalidateToken(getContext(), previousAccount);
 
-                                GoogleVoiceManager.getToken(getContext(), account);
+                                GoogleVoiceManager.getToken(getContext(), account.name);
 
                                 return true;
                             }

@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.runnirr.xvoiceplus.R;
 import com.runnirr.xvoiceplus.XVoicePlusService;
-import org.jetbrains.annotations.NotNull;
 
 public class XVoicePlusFragment extends PreferenceFragment {
 
@@ -25,7 +24,7 @@ public class XVoicePlusFragment extends PreferenceFragment {
     }
 
     @Override
-    public View onCreateView(@NotNull LayoutInflater li, ViewGroup vg, Bundle b) {
+    public View onCreateView(LayoutInflater li, ViewGroup vg, Bundle b) {
         View result = super.onCreateView(li, vg, b);
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         for (int i = 0; i < preferenceScreen.getPreferenceCount(); i++) {

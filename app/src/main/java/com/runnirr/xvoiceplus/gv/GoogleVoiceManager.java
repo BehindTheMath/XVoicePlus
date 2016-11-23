@@ -69,7 +69,7 @@ public class GoogleVoiceManager {
     // fetch the weirdo opaque token google voice needs...
     private String fetchRnrSe() throws Exception {
         final String authToken = getAuthToken();
-        JsonObject userInfo = Ion.with(mContext, "https://www.google.com/voice/request/user")
+        JsonObject userInfo = Ion.with(mContext).load("https://www.google.com/voice/request/user")
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .asJsonObject()
                 .get();
@@ -94,7 +94,7 @@ public class GoogleVoiceManager {
                     }
                     if (PhoneNumberUtils.compare(number, phone.get("phoneNumber").getAsString())) {
                         Log.i(TAG, "Disabling SMS forwarding to phone.");
-                        Ion.with(mContext, "https://www.google.com/voice/settings/editForwardingSms/")
+                        Ion.with(mContext).load("https://www.google.com/voice/settings/editForwardingSms/")
                         .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                         .setBodyParameter("phoneId", entry.getKey())
                         .setBodyParameter("enabled", "0")
@@ -127,8 +127,7 @@ public class GoogleVoiceManager {
     // hit the google voice api to send a text
     public void sendGvMessage(String number, String text) throws Exception {
         final String authToken = getAuthToken();
-        JsonObject json = Ion.with(mContext, "https://www.google.com/voice/sms/send/")
-                .onHeaders(new GvHeadersCallback(mContext, authToken))
+        JsonObject json = Ion.with(mContext).load("https://www.google.com/voice/sms/send/")
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .setBodyParameter("phoneNumber", number)
                 .setBodyParameter("sendErrorSms", "0")
@@ -150,8 +149,7 @@ public class GoogleVoiceManager {
     public void markGvMessageRead(String id, int read) throws Exception {
         final String authToken = getAuthToken();
         Log.d(TAG, "Marking messsage " + id + " as read");
-        Ion.with(mContext, "https://www.google.com/voice/inbox/mark/")
-        .onHeaders(new GvHeadersCallback(mContext, authToken))
+        Ion.with(mContext).load("https://www.google.com/voice/inbox/mark/")
         .setHeader("Authorization", "GoogleLogin auth=" + authToken)
         .setBodyParameter("messages", id)
         .setBodyParameter("read", String.valueOf(read))
@@ -171,8 +169,7 @@ public class GoogleVoiceManager {
         // tokens!
         final String authToken = getAuthToken();
 
-        Payload payload = Ion.with(mContext, "https://www.google.com/voice/request/messages")
-                .onHeaders(new GvHeadersCallback(mContext, authToken))
+        Payload payload = Ion.with(mContext).load("https://www.google.com/voice/request/messages")
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .as(Payload.class)
                 .get();
@@ -206,12 +203,12 @@ public class GoogleVoiceManager {
         }.start();
     }
 
-    public static void getToken(final Context context, final Account account) {
+    public static void getToken(final Context context, final String account) {
         AccountManager am = AccountManager.get(context);
         if (am == null)
             return;
 
-        am.getAuthToken(account, "grandcentral", null, false, new AccountManagerCallback<Bundle>() {
+        am.getAuthToken(new Account(account, "com.google"), "grandcentral", null, true, new AccountManagerCallback<Bundle>() {
             @Override
             public void run(AccountManagerFuture<Bundle> future) {
                 try {

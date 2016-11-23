@@ -17,7 +17,6 @@ import com.runnirr.xvoiceplus.receivers.BootCompletedReceiver;
 import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
 import com.runnirr.xvoiceplus.receivers.UserPollReceiver;
 
-import java.io.IOException;
 import java.util.*;
 
 
@@ -100,6 +99,14 @@ public class XVoicePlusService extends IntentService {
             }
             else {
                 synthesizeMessage(intent);
+            }
+            MessageEventReceiver.completeWakefulIntent(intent);
+        }
+
+        else if (MessageEventReceiver.NEW_OUTGOING_SMS.equals(intent.getAction())){
+            handleOutgoingSms(intent);
+            if(getSettings().getBoolean("settings_sync_on_send", false)) {
+                startRefresh();
             }
             MessageEventReceiver.completeWakefulIntent(intent);
         }
@@ -255,8 +262,8 @@ public class XVoicePlusService extends IntentService {
         if (!messageExists(m, URI_RECEIVED)){
             try{
                 SmsUtils.createFakeSms(this, m.phoneNumber, messageWithPrefixSuffix(m.message), m.date);
-            } catch (IOException e) {
-                Log.e(TAG, "IOException when creating fake sms, ignoring");
+            } catch (Exception e) {
+                Log.e(TAG, "Exception when creating fake sms, ignoring " + e);
             }
         }
     }

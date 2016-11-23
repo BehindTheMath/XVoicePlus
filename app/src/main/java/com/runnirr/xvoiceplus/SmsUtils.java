@@ -2,14 +2,20 @@ package com.runnirr.xvoiceplus;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.net.Uri;
 import android.os.Build;
+import android.os.IBinder;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Calendar;
+
+import de.robv.android.xposed.XposedBridge;
 
 public class SmsUtils {
     private static final String TAG = SmsUtils.class.getName();
