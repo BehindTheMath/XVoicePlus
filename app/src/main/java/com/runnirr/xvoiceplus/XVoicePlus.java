@@ -13,7 +13,7 @@ import android.os.Process;
 import android.telephony.SmsManager;
 import android.util.Log;
 
-import com.runnirr.xvoiceplus.hooks.XSmsMethodHook;
+import com.runnirr.xvoiceplus.hooks.XSendSmsMethodHook;
 import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
 
 import java.util.ArrayList;
@@ -41,21 +41,15 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
     public static final String APP_NAME = XVoicePlus.class.getSimpleName();
 
-    private XSmsMethodHook smsManagerHook;
-
-    public boolean isEnabled() {
+    public static boolean isEnabled() {
         return new XSharedPreferences(XVOICE_PLUS_PACKAGE).getBoolean("settings_enabled", true);
-    }
-
-    public XVoicePlus() {
-        smsManagerHook = new XSmsMethodHook(this);
     }
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws ClassNotFoundException {
         // Hooks com.android.* packages
         if (lpparam.packageName.equals("android") && lpparam.processName.equals("android")) {
-            hookXVoicePlusPermission(lpparam);
+            hookXVoicePlusPermissions(lpparam);
 
             hookAppOps(lpparam);
 
@@ -74,7 +68,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
      * @param lpparam
      */
     private void hookGoogleVoice(LoadPackageParam lpparam) {
-        Log.d(TAG, "Hooking google voice push notifications");
+        Log.d(TAG, "Hooking Google Voice push notifications");
 
         findAndHookMethod(GOOGLE_VOICE_PACKAGE + ".PushNotificationReceiver", lpparam.classLoader,
                 "onReceive", Context.class, Intent.class, new XC_MethodHook() {
@@ -101,6 +95,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     @Override
     public void initZygote(StartupParam startupParam) {
         // Hooks android.* packages
+
         // Enable SMS on tablets
         XResources.setSystemWideReplacement("android", "bool", "config_sms_capable", true);
 
@@ -130,7 +125,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
      * PackageManagerService to grant the permission.
      * @param lpparam
      */
-    private void hookXVoicePlusPermission(LoadPackageParam lpparam){
+    private void hookXVoicePlusPermissions(LoadPackageParam lpparam){
         Log.d(TAG, "Hooking " + APP_NAME + " permissions");
 
         final Class<?> packageManagerServiceClass = findClass("com.android.server.pm.PackageManagerService", lpparam.classLoader);
@@ -148,19 +143,18 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                             final Object settings = getObjectField(param.thisObject, "mSettings");
                             // Returns: ArrayMap<String, BasePermission> Settings.mPermissions
                             final Object permissions = getObjectField(settings, "mPermissions");
-
                             // Returns: BasePermission
                             final Object broadcastSmsPermission = XposedHelpers.callMethod(permissions, "get",
                                     BROADCAST_SMS_PERMISSION);
 
                             if ((Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) || (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1)) {
-                                final Set<String> grantedPermissions = (Set<String>) XposedHelpers.getObjectField(extras, "grantedPermissions");
+                                final Set<String> grantedPermissions = (Set<String>) getObjectField(extras, "grantedPermissions");
 
                                 if (!grantedPermissions.contains(BROADCAST_SMS_PERMISSION)) {
                                     // Returns: ((PackageSetting) GrantedPermissions).gids
-                                    int[] grantedPermissionsGids = (int[]) XposedHelpers.getObjectField(extras, "gids");
+                                    int[] grantedPermissionsGids = (int[]) getObjectField(extras, "gids");
                                     // Returns: BasePermission.gids
-                                    int[] broadcastSmsPermissionGids = (int[]) XposedHelpers.getObjectField(broadcastSmsPermission, "gids");
+                                    int[] broadcastSmsPermissionGids = (int[]) getObjectField(broadcastSmsPermission, "gids");
                                     grantedPermissionsGids = (int[]) XposedHelpers.callStaticMethod(param.thisObject.getClass(), "appendInts", grantedPermissionsGids, broadcastSmsPermissionGids);
                                     Log.d(TAG, "Permission added: " + broadcastSmsPermission + "; ret=" + grantedPermissionsGids);
                                 }
@@ -230,9 +224,9 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
         try {
             findAndHookMethod(SmsManager.class, "sendTextMessage", String.class, String.class,
-                    String.class, PendingIntent.class, PendingIntent.class, smsManagerHook);
+                    String.class, PendingIntent.class, PendingIntent.class, new XSendSmsMethodHook());
             findAndHookMethod(SmsManager.class, "sendMultipartTextMessage", String.class, String.class,
-                    ArrayList.class, ArrayList.class, ArrayList.class, smsManagerHook);
+                    ArrayList.class, ArrayList.class, ArrayList.class, new XSendSmsMethodHook());
             Log.d(TAG, "Hooked SmsManager methods successfully");
         } catch (XposedHelpers.ClassNotFoundError e) {
             Log.e(TAG, "Class android.telephony.SmsManager not found", e);
