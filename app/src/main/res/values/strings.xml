@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">XVoice+</string>
-    <string name="info">XVoice+ enables all SMS apps to send SMS messages through Google Voice.</string>
+    <string name="app_name">XVoice++</string>
+    <string name="info">XVoice++ enables all SMS apps to send and receive SMS messages through Google Voice.</string>
     <string name="disable">Disabled</string>
     <string name="account">Account</string>
     <string name="not_granted">Permission unavailable:\n%s</string>
-    <string name="xvoiceplus_started">XVoice+ is now running. SMS messages will be sent through Google Voice.</string>
+    <string name="xvoiceplus_started">XVoice++ is now running. SMS messages will be sent through Google Voice.</string>
     <string name="empty"></string>
 
-    <string name="settings_enable_toggle">Enable XVoice+</string>
+    <string name="settings_enable_toggle">Enable XVoice++</string>
     <string name="settings_enable_toggle_summary">Reboot after changing</string>
     <string name="settings_propagate_delete">Propagate Delete</string>
     <string name="settings_propagate_delete_summary_on">Deleted message will be deleted on Google Voice</string>
