@@ -60,3 +60,4 @@ gen-external-apklibs
 gradle
 gradlew
 gradlew.bat
+.idea/runConfigurations.xml

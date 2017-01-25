@@ -22,7 +22,7 @@ import java.util.*;
 
 
 public class XVoicePlusService extends IntentService {
-    private static final String TAG = XVoicePlusService.class.getName();
+    private static final String TAG = XVoicePlusService.class.getSimpleName();
 
     private static final int VOICE_INCOMING_SMS = 10;
     private static final int VOICE_OUTGOING_SMS = 11;
@@ -55,8 +55,9 @@ public class XVoicePlusService extends IntentService {
         return getSharedPreferences("com.runnirr.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
     }
 
-    // parse out the intent extras from android.intent.action.NEW_OUTGOING_SMS
-    // and send it off via google voice
+    /**
+     *  Parse out the intent extras from android.intent.action.NEW_OUTGOING_SMS and send it off via Google Voice
+     */
     private void handleOutgoingSms(Intent intent) {
         boolean multipart = intent.getBooleanExtra("multipart", false);
         String destAddr = intent.getStringExtra("destAddr");
@@ -70,54 +71,52 @@ public class XVoicePlusService extends IntentService {
 
     @Override
     protected void onHandleIntent(final Intent intent) {
-        if (!getSettings().getBoolean("settings_enabled", false)) {
+        if ((!getSettings().getBoolean("settings_enabled", false)) ||
+                intent.getAction() == null) {
             return;
         }
         Log.d(TAG, "Handling intent for action " + intent.getAction());
 
-        // handle an outgoing sms
+        // Handle an outgoing SMS
         if (MessageEventReceiver.OUTGOING_SMS.equals(intent.getAction())) {
             handleOutgoingSms(intent);
-            if(getSettings().getBoolean("settings_sync_on_send", false)) {
+            if (getSettings().getBoolean("settings_sync_on_send", false)) {
                 Log.d(TAG, "Sync on send enabled.");
                 startRefresh();
             }
             MessageEventReceiver.completeWakefulIntent(intent);
-        }
 
-        // polling
-        else if (UserPollReceiver.USER_POLL.equals(intent.getAction())) {
+        // Polling
+        } else if (UserPollReceiver.USER_POLL.equals(intent.getAction())) {
             startRefresh();
             UserPollReceiver.completeWakefulIntent(intent);
-        }
 
-        // incoming
-        else if (MessageEventReceiver.INCOMING_VOICE.equals(intent.getAction())) {
-            if(getSettings().getBoolean("settings_sync_on_receive", false)) {
+        // Incoming message
+        } else if (MessageEventReceiver.INCOMING_VOICE.equals(intent.getAction())) {
+            if (getSettings().getBoolean("settings_sync_on_receive", false)) {
                 Log.d(TAG, "Sync on receive enabled");
                 startRefresh();
                 clearRecent();
-            }
-            else {
+            } else {
                 synthesizeMessage(intent);
             }
             MessageEventReceiver.completeWakefulIntent(intent);
-        }
 
-        // boot
-        else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
+        // Boot
+        } else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
             if(getSettings().getBoolean("settings_sync_on_boot", false)) {
                 Log.d(TAG, "Sync on boot enabled.");
                 startRefresh();
             }
             BootCompletedReceiver.completeWakefulIntent(intent);
-        }
-        else if (GoogleVoiceManager.ACCOUNT_CHANGED.equals(intent.getAction())) {
+
+        // Google account changed
+        } else if (GoogleVoiceManager.ACCOUNT_CHANGED.equals(intent.getAction())) {
             mGVManager = new GoogleVoiceManager(this);
         }
     }
 
-    // mark all sent intents as failures
+    // Mark all sent intents as failures
     public static void fail(List<PendingIntent> sentIntents) {
         if (sentIntents == null)
             return;
@@ -133,8 +132,11 @@ public class XVoicePlusService extends IntentService {
         }
     }
 
-    // mark all sent intents as successfully sent
-    public void success(List<PendingIntent> sentIntents) {
+    /**
+     * Mark all sent intents as successfully sent.
+     *
+     * @param sentIntents
+     */    public void success(List<PendingIntent> sentIntents) {
         if (sentIntents == null)
             return;
         for (PendingIntent si: sentIntents) {
@@ -149,8 +151,9 @@ public class XVoicePlusService extends IntentService {
         }
     }
 
-    // mark an outgoing text as recently sent, so if it comes in via
-    // round trip, we ignore it.
+    /**
+     * Mark an outgoing text as recently sent, so if it comes in via round trip, we ignore it.
+     */
     private void addRecent(String text) {
             SharedPreferences savedRecent = getRecentMessages();
             Set<String> recentMessage = savedRecent.getStringSet("recent", new HashSet<String>());
@@ -172,7 +175,16 @@ public class XVoicePlusService extends IntentService {
         getRecentMessages().edit().putStringSet("recent", new HashSet<String>()).apply();
     }
 
-    // send an outgoing sms event via google voice
+    /**
+     * Send an outgoing SMS via Google Voice
+     *
+     * @param destAddr
+     * @param scAddr
+     * @param texts
+     * @param sentIntents
+     * @param deliveryIntents
+     * @param multipart
+     */
     private void onSendMultipartText(String destAddr, String scAddr, List<String> texts,
             final List<PendingIntent> sentIntents, final List<PendingIntent> deliveryIntents,
             boolean multipart) {
@@ -187,7 +199,7 @@ public class XVoicePlusService extends IntentService {
             // send it off, and note that we recently sent this message
             // for round trip tracking
             mGVManager.sendGvMessage(destAddr, text);
-            if(syncEnabled())addRecent(text);
+            if (syncEnabled()) addRecent(text);
             success(sentIntents);
             return;
         }
@@ -221,10 +233,10 @@ public class XVoicePlusService extends IntentService {
         return false;
     }
 
-    // insert a message into the sms/mms provider.
-    // we do this in the case of outgoing messages
-    // that were not sent via this phone, and also on initial
-    // message sync.
+    /**
+     * Insert a message into the sms/mms provider. We do this in the case of outgoing messages that
+     * were not sent via this phone, and also on initial message sync.
+     */
     void insertMessage(Message m) {
         Uri uri;
         int type;
@@ -251,12 +263,12 @@ public class XVoicePlusService extends IntentService {
         }
     }
 
-    void synthesizeMessage(Message m) {
-        if (!messageExists(m, URI_RECEIVED)){
+    void synthesizeMessage(Message message) {
+        if (!messageExists(message, URI_RECEIVED)){
             try{
-                SmsUtils.createFakeSms(this, m.phoneNumber, messageWithPrefixSuffix(m.message), m.date);
+                SmsUtils.createFakeSms(this, message.phoneNumber, messageWithPrefixSuffix(message.message), message.date);
             } catch (IOException e) {
-                Log.e(TAG, "IOException when creating fake sms, ignoring");
+                Log.e(TAG, "IOException when creating fake SMS, ignoring.", e);
             }
         }
     }
@@ -336,7 +348,7 @@ public class XVoicePlusService extends IntentService {
 
         Log.d(TAG, "New message count: " + newMessages.size());
 
-        // sort by date order so the events get added in the same order
+        // Sort by date order so the events get added in the same order
         Collections.sort(newMessages, new Comparator<Message>() {
             @Override
             public int compare(Message lhs, Message rhs) {
@@ -348,14 +360,13 @@ public class XVoicePlusService extends IntentService {
         for (Message message : newMessages) {
             max = Math.max(max, message.date);
 
-            // on first sync, just populate the mms provider...
-            // don't send any broadcasts.
+            // On first sync, just populate the MMS provider, don't send any broadcasts.
             if (timestamp == 0) {
                 insertMessage(message);
                 continue;
             }
 
-            // sync up outgoing messages
+            // Sync up outgoing messages
             if (message.type == VOICE_OUTGOING_SMS) {
                 if (!removeRecent(message.message)) {
                     Log.d(TAG, "Outgoing message not found in recents, inserting into SMS database.");
@@ -366,13 +377,12 @@ public class XVoicePlusService extends IntentService {
                 if (recentPushMessages.remove(message.id)) {
                     // We already synthesized this message
                     Log.d(TAG, "Message " + message.id + " was already pushed.");
-                    getRecentMessages().edit().putStringSet("push_messages", recentPushMessages);
+                    getRecentMessages().edit().putStringSet("push_messages", recentPushMessages).apply();
                 } else {
                     synthesizeMessage(message);
                 }
             }
         }
-
         getAppSettings().edit().putLong("timestamp", max).apply();
     }
 
@@ -386,10 +396,8 @@ public class XVoicePlusService extends IntentService {
     }
 
     public boolean syncEnabled() {
-        return(
-                getSettings().getBoolean("settings_sync_on_receive", false) |
+        return(getSettings().getBoolean("settings_sync_on_receive", false) |
                 getSettings().getBoolean("settings_sync_on_send", false) |
-                Long.valueOf(getSettings().getString("settings_polling_frequency", "-1")) != -1L
-        );
+                Long.valueOf(getSettings().getString("settings_polling_frequency", "-1")) != -1L);
     }
 }

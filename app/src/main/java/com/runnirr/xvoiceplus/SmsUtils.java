@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
 import java.util.Calendar;
 
 public class SmsUtils {
-    private static final String TAG = SmsUtils.class.getName();
+    private static final String TAG = SmsUtils.class.getSimpleName();
 
     public static final String FORMAT_3GPP = "3gpp";
     public static final int OP_WRITE_SMS = 15;
@@ -77,6 +77,17 @@ public class SmsUtils {
         broadcastMessage(context, pdu);
     }
 
+    /**
+     * Send the systemwide SMS_RECEIVED_ACTION broadcast intent with the new incoming message.
+     *
+     * Starting with KK, there are 2 broadcast intents sent for each message. The SMS_DELIVER_ACTION
+     * intent is sent only to the default messaging app, and only this app can write to the SMS
+     * Provider. The SMS_RECEIVED_ACTION broadcast intent is sent systemwide, and can be received
+     * by any app, to be notified that there is an incoming SMS.
+     *
+     * @param context
+     * @param pdu
+     */
     private static void broadcastMessage(Context context, byte[] pdu) {
         Log.d(TAG, "Creating fake sms. Broadcasting...");
         //Log.d(TAG, "Broadcasting pdu " + bytesToHex(pdu));
