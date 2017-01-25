@@ -1,21 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (C) 2013 The CyanogenMod Project
-
-     Licensed under the Apache License, Version 2.0 (the "License");
-     you may not use this file except in compliance with the License.
-     You may obtain a copy of the License at
-
-          http://www.apache.org/licenses/LICENSE-2.0
-
-     Unless required by applicable law or agreed to in writing, software
-     distributed under the License is distributed on an "AS IS" BASIS,
-     WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-     See the License for the specific language governing permissions and
-     limitations under the License.
--->
 <resources>
     <string name="app_name">XVoice+</string>
-    <string name="info">XVoice+ enables all apps to send SMS messages through Google Voice</string>
+    <string name="info">XVoice+ enables all SMS apps to send SMS messages through Google Voice.</string>
     <string name="disable">Disabled</string>
     <string name="account">Account</string>
     <string name="not_granted">Permission unavailable:\n%s</string>
@@ -31,10 +17,7 @@
     <string name="settings_incoming_prefix">Incoming Message Prefix</string>
     <string name="settings_incoming_suffix">Incoming Message Suffix</string>
 
-    <string name="settings_sync_summary">
-Synchronize messages across devices.\n
-<i>When all sync settings are disabled, messages will still arrive via GV push notifications.</i>
-    </string>
+    <string name="settings_sync_summary">Synchronize messages across devices.\n<i>When all sync settings are disabled, messages will still arrive via GV push notifications.</i></string>
 
     <string-array name="polling_frequency_choices">
         <item name="never">Never</item>
