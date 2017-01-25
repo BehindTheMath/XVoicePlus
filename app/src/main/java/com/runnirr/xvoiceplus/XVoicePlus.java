@@ -1,11 +1,15 @@
 package com.runnirr.xvoiceplus;
 
+import android.app.AndroidAppHelper;
 import android.app.AppOpsManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.res.XResources;
 import android.os.Build;
+import android.os.Bundle;
+import android.os.Process;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -54,6 +58,10 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
             hookXVoicePlusPermission(lpparam);
 
             hookAppOps(lpparam);
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                hookBroadcastPermissionCheck(lpparam);
+            }
         }
 
         if (GOOGLE_VOICE_PACKAGE.equals(lpparam.packageName)) {
@@ -178,7 +186,48 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                 });
     }
 
-    private void hookSmsManager(){
+    /**
+     * Hooks com.android.server.am.ActivityManagerService.broadcastIntentLocked()
+     *
+     * Once we hooked the incoming message from Google Voice, we use the android.provider.Telephony.SMS_DELIVER
+     * intent to spoof an incoming SMS. However, in Marshmallow this is a protected broadcast, so
+     * it's only available to be sent by system packages. As a workaround, we hook the method that
+     * checks if the broadcast is protected, and spoof the broadcast as if it's coming from PHONE_UID.
+     *
+     * @param lpparam
+     */
+    private void hookBroadcastPermissionCheck(final LoadPackageParam lpparam) {
+        Log.d(TAG, "Hooking broadcast permissions");
+
+        findAndHookMethod("com.android.server.am.ActivityManagerService", lpparam.classLoader, "broadcastIntentLocked",
+                "com.android.server.am.ProcessRecord", String.class, Intent.class, String.class,
+                "android.content.IIntentReceiver", int.class, String.class, Bundle.class, (new String[0]).getClass(),
+                int.class, Bundle.class, boolean.class, boolean.class, int.class, int.class, int.class,
+                new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        // Index of the callingUid argument
+                        final int ARGUMENT_INDEX_CALLING_UID = 14;
+                        int callingUid = (int) param.args[ARGUMENT_INDEX_CALLING_UID];
+                        // Get our UID
+                        int appUid = AndroidAppHelper.currentApplication().getPackageManager().getApplicationInfo("io.behindthemath.xvoiceplusplus", PackageManager.GET_META_DATA).uid;
+                        // If the broadcast is from us
+                        if (callingUid == appUid) {
+                            Log.d(TAG, "Hooking broadcast permissions: Overriding callingUid "
+                                    + callingUid + " with Process.PHONE_UID (UID 1001)");
+                            // Spoof the broadcast as if it's coming from PHONE_UID, so the system will let it through
+                            param.args[ARGUMENT_INDEX_CALLING_UID] = Process.PHONE_UID;
+                        }
+                    }
+                });
+    }
+
+    /**
+     * Hooks {@link SmsManager} to intercept outgoing messages.
+     */
+    private void hookSmsManager() {
+        Log.d(TAG, "Attempting to hook SmsManager");
+
         try {
             findAndHookMethod(SmsManager.class, "sendTextMessage", String.class, String.class,
                     String.class, PendingIntent.class, PendingIntent.class, smsManagerHook);
