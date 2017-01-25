@@ -38,6 +38,12 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
     @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws ClassNotFoundException {
+        if (lpparam.packageName.equals("android") && lpparam.processName.equals("android")) {
+            hookXVoicePlusPermission();
+
+            hookAppOps();
+        }
+
         if (lpparam.packageName.equals(GOOGLE_VOICE_PACKAGE)) {
             Log.d(TAG, "Hooking google voice push notifications");
             hookGoogleVoice(lpparam);
@@ -71,11 +77,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public void initZygote(StartupParam startupParam) {
         XResources.setSystemWideReplacement("android", "bool", "config_sms_capable", true);
 
-        hookXVoicePlusPermission();
         hookSmsManager();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
-            hookAppOps();
-        }
     }
 
     @TargetApi(19)
