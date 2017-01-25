@@ -3,9 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/XVoicePlus.iml" filepath="$PROJECT_DIR$/XVoicePlus.iml" />
-      <module fileurl="file://$PROJECT_DIR$/XVoicePlusGradle.iml" filepath="$PROJECT_DIR$/XVoicePlusGradle.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>
 </project>
-
