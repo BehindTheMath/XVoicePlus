@@ -8,8 +8,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.XResources;
 import android.os.Build;
-import android.os.Bundle;
-import android.telephony.SmsMessage;
 import android.util.Log;
 import com.runnirr.xvoiceplus.hooks.XSmsMethodHook;
 import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
@@ -26,10 +24,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
     private static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
     private static final String XVOICE_PLUS_PACKAGE = "com.runnirr.xvoiceplus";
-    private static final String SENSE_SMS_PACKAGE = "com.htc.sense.mms";
-    private static final String SMS_PACKAGE = "com.android.mms";
     private static final String PERM_BROADCAST_SMS = "android.permission.BROADCAST_SMS";
-    private static boolean TOUCHWIZ = false;
 
     private XSmsMethodHook smsManagerHook;
 
@@ -46,16 +41,6 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         if (lpparam.packageName.equals(GOOGLE_VOICE_PACKAGE)) {
             Log.d(TAG, "Hooking google voice push notifications");
             hookGoogleVoice(lpparam);
-        }
-        // Sense
-        else if(lpparam.packageName.equals(SENSE_SMS_PACKAGE)) {
-            Log.d(TAG, "Hooking sense SMS wrapper");
-            hookSendSmsSense(lpparam);
-        }
-        // Touchwiz
-        else if(TOUCHWIZ && lpparam.packageName.equals(SMS_PACKAGE)) {
-            Log.d(TAG, "Hooking SmsReceiverService");
-            hookSendSmsTouchwiz(lpparam);
         }
     }
 
@@ -87,7 +72,6 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         XResources.setSystemWideReplacement("android", "bool", "config_sms_capable", true);
 
         hookXVoicePlusPermission();
-        hookSmsMessage();
         hookSmsManager();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT){
             hookAppOps();
@@ -110,48 +94,6 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                 }
             }
 
-        });
-    }
-
-    private void hookSmsMessage() {
-        final String INTERNAL_GSM_SMS_MESSAGE = "com.android.internal.telephony.gsm.SmsMessage";
-        final String createFromPdu = "createFromPdu";
-
-        findAndHookMethod(android.telephony.gsm.SmsMessage.class, createFromPdu, byte[].class, new XC_MethodHook() {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                Log.d(TAG, "After hook of telephony.gsm.SmsMessage");
-                android.telephony.gsm.SmsMessage originalResult = (android.telephony.gsm.SmsMessage) param.getResult();
-                try {
-                    if (originalResult != null && getObjectField(originalResult, "mWrappedSmsMessage") != null) {
-                        Log.d(TAG, "message and wrapped message are non-null. use them");
-                        return;
-                    }
-                } catch (Exception e) {
-                    Log.w(TAG, "Original message body is not available. Try to use GSM");
-                }
-                Object gsmResult = callStaticMethod(findClass(INTERNAL_GSM_SMS_MESSAGE, null), createFromPdu, param.args[0]);
-                setObjectField(originalResult, "mWrappedSmsMessage", gsmResult);
-            }
-        });
-        findAndHookMethod(SmsMessage.class, createFromPdu, byte[].class, String.class, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Log.d(TAG, "Create from PDU");
-                if (!SmsUtils.FORMAT_3GPP.equals(param.args[1])) {
-                    try {
-                        Log.d(TAG, "Trying to parse fake pdu");
-                        SmsMessage result = (SmsMessage) callStaticMethod(SmsMessage.class, "createFromPdu", param.args[0], SmsUtils.FORMAT_3GPP);
-                        if (result != null && getObjectField(result, "mWrappedSmsMessage") != null) {
-                            param.setResult(result);
-                        } else {
-                            Log.w(TAG, "Something with the message was null");
-                        }
-                    } catch (Exception e) {
-                        Log.w(TAG, "Unable to parse message as " + SmsMessage.class.getName(), e);
-                    }
-                }
-            }
         });
     }
 
@@ -188,7 +130,6 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     private void hookSmsManager(){
-        // AOSP
         Class clazz = findClass("android.telephony.SmsManager", null);
         try {
             findAndHookMethod(clazz, "sendTextMessage",
@@ -201,48 +142,5 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         } catch(NoSuchMethodError ex) {
             Log.w(TAG, "Failed to hook standard SmsManager methods");
         }
-
-        // Touchwiz
-        try {
-            findAndHookMethod(clazz, "sendMultipartTextMessage",
-                    String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                    boolean.class, int.class, int.class, int.class,
-                    smsManagerHook);
-            findAndHookMethod(clazz, "sendMultipartTextMessage",
-                    String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                    boolean.class, int.class, int.class, int.class, int.class,
-                    smsManagerHook);
-            findAndHookMethod(clazz, "sendMultipartTextMessage",
-                    String.class, String.class, ArrayList.class, ArrayList.class, ArrayList.class,
-                    String.class, int.class,
-                    smsManagerHook);
-            TOUCHWIZ = true;
-            Log.d(TAG, "Hooked Touchwiz SmsManager methods");
-        } catch(NoSuchMethodError ignored) {
-            Log.d(TAG, "Touchwiz SmsManager methods not hooked.");
-        }
-    }
-
-    // Sense based ROMs
-    private void hookSendSmsSense(LoadPackageParam lpparam) {
-        Class clazz = findClass("com.htc.wrap.android.telephony.HtcWrapIfSmsManager", lpparam.classLoader);
-        findAndHookMethod(clazz, "sendMultipartTextMessage",
-                String.class, String.class, ArrayList.class, ArrayList.class, Bundle.class,
-                smsManagerHook);
-
-    }
-
-    // Touchwiz based ROMs
-    private void hookSendSmsTouchwiz(LoadPackageParam lpparam) {
-        Class clazz = findClass(SMS_PACKAGE + ".transaction.SmsReceiverService", lpparam.classLoader);
-        // Fixes spinning in touchwiz stock
-        findAndHookMethod(clazz, "handleSmsSent",
-                Intent.class, int.class,
-                new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        ((Intent) param.args[0]).putExtra("LastSentMsg", true);
-                    }
-                });
     }
 }
