@@ -5,6 +5,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.XResources;
+import android.os.Build;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -12,7 +13,7 @@ import com.runnirr.xvoiceplus.hooks.XSmsMethodHook;
 import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Set;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
@@ -22,8 +23,6 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 
-import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static de.robv.android.xposed.XposedHelpers.findClass;
 import static de.robv.android.xposed.XposedHelpers.getObjectField;
@@ -135,26 +134,42 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                         if (XVOICE_PLUS_PACKAGE.equals(pkgName)) {
                             // Returns: (PackageSetting) Object PackageParser$Package.mExtras
                             final Object extras = getObjectField(param.args[0], "mExtras");
-                            final HashSet<String> grantedPerms =
-                                    (HashSet<String>) getObjectField(extras, "grantedPermissions");
                             // Returns: com.android.server.pm.Settings PackageManagerService.mSettings
                             final Object settings = getObjectField(param.thisObject, "mSettings");
                             // Returns: ArrayMap<String, BasePermission> Settings.mPermissions
                             final Object permissions = getObjectField(settings, "mPermissions");
 
-                            // Add android.permission.BROADCAST_SMS to xvoiceplus
-                            if (!grantedPerms.contains(BROADCAST_SMS_PERMISSION)) {
-                                // Returns: BasePermission
-                                final Object pAccessBroadcastSms = callMethod(permissions, "get",
-                                        BROADCAST_SMS_PERMISSION);
-                                grantedPerms.add(BROADCAST_SMS_PERMISSION);
-                                // Returns: ((PackageSetting) GrantedPermissions).gids
-                                int[] gpGids = (int[]) getObjectField(extras, "gids");
-                                // Returns: BasePermission.gids
-                                int[] bpGids = (int[]) getObjectField(pAccessBroadcastSms, "gids");
-                                gpGids = (int[]) callStaticMethod(param.thisObject.getClass(),
-                                        "appendInts", gpGids, bpGids);
-                                Log.d(TAG, "Permission added: " + pAccessBroadcastSms + "; ret=" + gpGids);
+                            // Returns: BasePermission
+                            final Object broadcastSmsPermission = XposedHelpers.callMethod(permissions, "get",
+                                    BROADCAST_SMS_PERMISSION);
+
+                            if ((Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) || (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP_MR1)) {
+                                final Set<String> grantedPermissions = (Set<String>) XposedHelpers.getObjectField(extras, "grantedPermissions");
+
+                                if (!grantedPermissions.contains(BROADCAST_SMS_PERMISSION)) {
+                                    // Returns: ((PackageSetting) GrantedPermissions).gids
+                                    int[] grantedPermissionsGids = (int[]) XposedHelpers.getObjectField(extras, "gids");
+                                    // Returns: BasePermission.gids
+                                    int[] broadcastSmsPermissionGids = (int[]) XposedHelpers.getObjectField(broadcastSmsPermission, "gids");
+                                    grantedPermissionsGids = (int[]) XposedHelpers.callStaticMethod(param.thisObject.getClass(), "appendInts", grantedPermissionsGids, broadcastSmsPermissionGids);
+                                    Log.d(TAG, "Permission added: " + broadcastSmsPermission + "; ret=" + grantedPermissionsGids);
+                                }
+                            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                //Based on https://github.com/wasdennnoch/AndroidN-ify/blob/ebb3a60a155b30dc177cf4968cb28d1254171851/app/src/main/java/tk/wasdennnoch/androidn_ify/utils/PermissionGranter.java#L74-#L89
+                                final Object permissionsState = XposedHelpers.callMethod(extras, "getPermissionsState");
+
+                                if (!(boolean) XposedHelpers.callMethod(permissionsState, "hasInstallPermission", BROADCAST_SMS_PERMISSION)) {
+                                    // Try granting the permission
+                                    int ret = (int) XposedHelpers.callMethod(permissionsState, "grantInstallPermission", broadcastSmsPermission);
+
+                                    Class<?> clazz = findClass("com.android.server.pm.PermissionsState", null);
+                                    final int PERMISSION_OPERATION_FAILURE = XposedHelpers.getStaticIntField(clazz, "PERMISSION_OPERATION_FAILURE");
+                                    if (ret != PERMISSION_OPERATION_FAILURE) {
+                                        Log.d(TAG, "Permission added: " + broadcastSmsPermission);
+                                    } else {
+                                        Log.w(TAG, "Error adding permission: " + broadcastSmsPermission);
+                                    }
+                                }
                             }
                         }
                     }
