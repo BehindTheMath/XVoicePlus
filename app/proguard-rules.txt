@@ -1,2 +1,2 @@
 -dontobfuscate
--keep public class com.runnirr.xvoiceplus.XVoicePlus
+-keep public class io.behindthemath.xvoiceplus.XVoicePlus

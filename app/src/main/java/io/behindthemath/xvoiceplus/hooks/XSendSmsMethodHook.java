@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus.hooks;
+package io.behindthemath.xvoiceplus.hooks;
 
 import android.app.AndroidAppHelper;
 import android.app.PendingIntent;
@@ -6,9 +6,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.Log;
 
-import com.runnirr.xvoiceplus.XVoicePlus;
-import com.runnirr.xvoiceplus.XVoicePlusService;
-import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
+import io.behindthemath.xvoiceplus.XVoicePlus;
+import io.behindthemath.xvoiceplus.XVoicePlusService;
+import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 
 import java.io.IOException;
 import java.util.ArrayList;

@@ -5,7 +5,7 @@ android {
     buildToolsVersion '23.0.3'
 
     defaultConfig {
-        applicationId "com.runnirr.xvoiceplus"
+        applicationId "io.behindthemath.xvoiceplus"
         minSdkVersion 21
         targetSdkVersion 22
         versionCode 16

@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus.gv;
+package io.behindthemath.xvoiceplus.gv;
 
 import com.google.gson.annotations.SerializedName;
 

@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus;
+package io.behindthemath.xvoiceplus;
 
 import android.app.Activity;
 import android.app.IntentService;
@@ -10,12 +10,12 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
-import com.runnirr.xvoiceplus.gv.GoogleVoiceManager;
-import com.runnirr.xvoiceplus.gv.GvResponse.Conversation;
-import com.runnirr.xvoiceplus.gv.GvResponse.Message;
-import com.runnirr.xvoiceplus.receivers.BootCompletedReceiver;
-import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
-import com.runnirr.xvoiceplus.receivers.UserPollReceiver;
+import io.behindthemath.xvoiceplus.gv.GoogleVoiceManager;
+import io.behindthemath.xvoiceplus.gv.GvResponse.Conversation;
+import io.behindthemath.xvoiceplus.gv.GvResponse.Message;
+import io.behindthemath.xvoiceplus.receivers.BootCompletedReceiver;
+import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
+import io.behindthemath.xvoiceplus.receivers.UserPollReceiver;
 
 import java.io.IOException;
 import java.util.*;
@@ -36,11 +36,7 @@ public class XVoicePlusService extends IntentService {
     private GoogleVoiceManager mGVManager = new GoogleVoiceManager(this);
 
     public XVoicePlusService() {
-        this("XVoicePlusService");
-    }
-
-    public XVoicePlusService(String name) {
-        super(name);
+        super("XVoicePlusService");
     }
 
     private SharedPreferences getAppSettings() {
@@ -52,7 +48,7 @@ public class XVoicePlusService extends IntentService {
     }
 
     private SharedPreferences getSettings() {
-        return getSharedPreferences("com.runnirr.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
+        return getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
     }
 
     /**

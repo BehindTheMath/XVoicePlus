@@ -7,7 +7,7 @@
         android:persistent="true"
         android:disableDependentsState="false"/>
 
-    <com.runnirr.xvoiceplus.ui.AccountListPreferences
+    <io.behindthemath.xvoiceplus.ui.AccountListPreferences
         android:dependency="settings_enabled"
         android:key="account"
         android:title="@string/account"

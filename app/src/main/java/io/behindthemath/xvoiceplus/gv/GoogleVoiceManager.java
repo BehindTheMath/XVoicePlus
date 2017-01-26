@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus.gv;
+package io.behindthemath.xvoiceplus.gv;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -12,21 +12,23 @@ import android.os.Handler;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.TelephonyManager;
 import android.util.Log;
+
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.koushikdutta.ion.Ion;
-import com.runnirr.xvoiceplus.XVoicePlusService;
-import com.runnirr.xvoiceplus.gv.GvResponse.Conversation;
-import com.runnirr.xvoiceplus.gv.GvResponse.Payload;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import io.behindthemath.xvoiceplus.XVoicePlusService;
+import io.behindthemath.xvoiceplus.gv.GvResponse.Conversation;
+import io.behindthemath.xvoiceplus.gv.GvResponse.Payload;
+
 public class GoogleVoiceManager {
     private static final String TAG = GoogleVoiceManager.class.getSimpleName();
 
-    public static final String ACCOUNT_CHANGED = "com.runnirr.xvoiceplus.ACCOUNT_CHANGED";
+    public static final String ACCOUNT_CHANGED = "io.behindthemath.xvoiceplus.ACCOUNT_CHANGED";
 
     private final Context mContext;
     private String mRnrse = null;
@@ -36,7 +38,7 @@ public class GoogleVoiceManager {
     }
 
     private SharedPreferences getSettings() {
-        return mContext.getSharedPreferences("com.runnirr.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
+        return mContext.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
     }
 
     private String getAccount() {

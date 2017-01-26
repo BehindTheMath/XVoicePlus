@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus;
+package io.behindthemath.xvoiceplus;
 
 import android.content.Context;
 import android.content.Intent;

@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus.receivers;
+package io.behindthemath.xvoiceplus.receivers;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -6,12 +6,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.SystemClock;
 import android.util.Log;
-import com.runnirr.xvoiceplus.R;
-import com.runnirr.xvoiceplus.XVoicePlusService;
+import io.behindthemath.xvoiceplus.R;
+import io.behindthemath.xvoiceplus.XVoicePlusService;
 
 public class UserPollReceiver extends XVoicePlusReceiver {
     private static final String TAG = UserPollReceiver.class.getSimpleName();
-    public static final String USER_POLL = "com.runnirr.xvoiceplus.USER_POLL";
+    public static final String USER_POLL = "io.behindthemath.xvoiceplus.USER_POLL";
     
     @Override
     public void onReceive(Context context, Intent intent) {

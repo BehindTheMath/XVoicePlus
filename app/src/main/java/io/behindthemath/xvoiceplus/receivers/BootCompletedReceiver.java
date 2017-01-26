@@ -1,10 +1,10 @@
-package com.runnirr.xvoiceplus.receivers;
+package io.behindthemath.xvoiceplus.receivers;
 
 import android.content.Context;
 import android.content.Intent;
 import android.widget.Toast;
-import com.runnirr.xvoiceplus.R;
-import com.runnirr.xvoiceplus.XVoicePlusService;
+import io.behindthemath.xvoiceplus.R;
+import io.behindthemath.xvoiceplus.XVoicePlusService;
 
 public class BootCompletedReceiver extends XVoicePlusReceiver {
     public static final String BOOT_COMPLETED = "android.intent.action.BOOT_COMPLETED";

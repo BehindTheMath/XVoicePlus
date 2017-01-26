@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus.gv;
+package io.behindthemath.xvoiceplus.gv;
 
 import android.accounts.AccountManager;
 import android.content.Context;
@@ -38,6 +38,6 @@ public class GvHeadersCallback implements HeadersCallback {
     }
 
     private SharedPreferences getSettings() {
-        return mContext.getSharedPreferences("com.runnirr.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
+        return mContext.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
     }
 }

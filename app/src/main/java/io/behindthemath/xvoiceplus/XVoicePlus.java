@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus;
+package io.behindthemath.xvoiceplus;
 
 import android.app.AndroidAppHelper;
 import android.app.AppOpsManager;
@@ -13,8 +13,8 @@ import android.os.Process;
 import android.telephony.SmsManager;
 import android.util.Log;
 
-import com.runnirr.xvoiceplus.hooks.XSendSmsMethodHook;
-import com.runnirr.xvoiceplus.receivers.MessageEventReceiver;
+import io.behindthemath.xvoiceplus.hooks.XSendSmsMethodHook;
+import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -36,7 +36,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public static final String TAG = XVoicePlus.class.getName();
 
     private static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
-    private static final String XVOICE_PLUS_PACKAGE = "com.runnirr.xvoiceplus";
+    private static final String XVOICE_PLUS_PACKAGE = "io.behindthemath.xvoiceplus";
     private static final String BROADCAST_SMS_PERMISSION = "android.permission.BROADCAST_SMS";
 
     public static final String APP_NAME = XVoicePlus.class.getSimpleName();

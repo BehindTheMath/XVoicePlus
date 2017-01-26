@@ -1,4 +1,4 @@
-package com.runnirr.xvoiceplus.ui;
+package io.behindthemath.xvoiceplus.ui;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -8,8 +8,8 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.runnirr.xvoiceplus.R;
-import com.runnirr.xvoiceplus.XVoicePlusService;
+import io.behindthemath.xvoiceplus.R;
+import io.behindthemath.xvoiceplus.XVoicePlusService;
 
 public class XVoicePlusFragment extends PreferenceFragment {
 

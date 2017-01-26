@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="com.runnirr.xvoiceplus">
+      package="io.behindthemath.xvoiceplus">
 
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
@@ -28,7 +28,7 @@
         <meta-data android:name="xposeddescription" android:value="@string/app_name"/>
 
         <activity
-            android:name="com.runnirr.xvoiceplus.ui.XVoicePlusSetup"
+            android:name="io.behindthemath.xvoiceplus.ui.XVoicePlusSetup"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
             <intent-filter>
@@ -37,23 +37,23 @@
             </intent-filter>
         </activity>
 
-        <service android:name="com.runnirr.xvoiceplus.XVoicePlusService" />
+        <service android:name="io.behindthemath.xvoiceplus.XVoicePlusService" />
 
-        <receiver android:name="com.runnirr.xvoiceplus.receivers.MessageEventReceiver">
+        <receiver android:name="io.behindthemath.xvoiceplus.receivers.MessageEventReceiver">
             <intent-filter>
                 <action android:name="com.runnirr.xvoiceplus.INCOMING_VOICE" />
                 <action android:name="com.runnirr.xvoiceplus.OUTGOING_SMS" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name="com.runnirr.xvoiceplus.receivers.BootCompletedReceiver">
+        <receiver android:name="io.behindthemath.xvoiceplus.receivers.BootCompletedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
         <receiver
-            android:name="com.runnirr.xvoiceplus.receivers.UserPollReceiver"
+            android:name="io.behindthemath.xvoiceplus.receivers.UserPollReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="com.runnirr.xvoiceplus.USER_POLL" />
