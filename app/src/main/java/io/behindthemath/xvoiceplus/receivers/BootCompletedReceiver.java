@@ -11,7 +11,7 @@ public class BootCompletedReceiver extends XVoicePlusReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (isEnabled(context)) {
+        if (isEnabled(context) && BOOT_COMPLETED.equals(intent.getAction())) {
             Toast.makeText(context, context.getResources().getString(R.string.xvoiceplus_started), Toast.LENGTH_LONG).show();
             UserPollReceiver.startAlarmManager(context);
             intent.setClass(context, XVoicePlusService.class);
