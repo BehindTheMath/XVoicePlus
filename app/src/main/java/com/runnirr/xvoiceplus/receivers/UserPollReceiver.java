@@ -10,7 +10,7 @@ import com.runnirr.xvoiceplus.R;
 import com.runnirr.xvoiceplus.XVoicePlusService;
 
 public class UserPollReceiver extends XVoicePlusReceiver {
-    private static final String TAG = UserPollReceiver.class.getName();
+    private static final String TAG = UserPollReceiver.class.getSimpleName();
     public static final String USER_POLL = "com.runnirr.xvoiceplus.USER_POLL";
     
     @Override

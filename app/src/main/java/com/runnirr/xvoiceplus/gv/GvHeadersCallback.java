@@ -4,8 +4,9 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.util.Log;
-import com.koushikdutta.async.http.libcore.RawHeaders;
+
 import com.koushikdutta.ion.HeadersCallback;
+import com.koushikdutta.ion.HeadersResponse;
 
 public class GvHeadersCallback implements HeadersCallback {
     
@@ -21,9 +22,9 @@ public class GvHeadersCallback implements HeadersCallback {
     }
 
     @Override
-    public void onHeaders(RawHeaders headers) {
-        if (headers.getResponseCode() == 401) {
-            Log.e(TAG, "Refresh failed:\n" + headers.toHeaderString());
+    public void onHeaders(HeadersResponse headersResponse) {
+        if (headersResponse.code() == 401) {
+            Log.e(TAG, "Refresh failed:\n" + headersResponse.message());
             AccountManager am = AccountManager.get(mContext);
             if (am != null) {
                 am.invalidateAuthToken("com.google", mAuthToken);

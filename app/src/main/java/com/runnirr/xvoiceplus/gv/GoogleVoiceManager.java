@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 public class GoogleVoiceManager {
-    private static final String TAG = GoogleVoiceManager.class.getName();
+    private static final String TAG = GoogleVoiceManager.class.getSimpleName();
 
     public static final String ACCOUNT_CHANGED = "com.runnirr.xvoiceplus.ACCOUNT_CHANGED";
 
@@ -66,10 +66,10 @@ public class GoogleVoiceManager {
         return mRnrse;
     }
     
-    // fetch the weirdo opaque token google voice needs...
+    // Fetch the weirdo opaque token Google Voice needs...
     private String fetchRnrSe() throws Exception {
         final String authToken = getAuthToken();
-        JsonObject userInfo = Ion.with(mContext, "https://www.google.com/voice/request/user")
+        JsonObject userInfo = Ion.with(mContext).load("https://www.google.com/voice/request/user")
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .asJsonObject()
                 .get();
@@ -83,8 +83,8 @@ public class GoogleVoiceManager {
 
     private void verifySmsForwarding(JsonObject userInfo, String authToken, String rnrse) {
         try {
-            TelephonyManager tm = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
-            String number = tm.getLine1Number();
+            TelephonyManager telephonyManager = (TelephonyManager) mContext.getSystemService(Context.TELEPHONY_SERVICE);
+            String number = telephonyManager.getLine1Number();
             if (number != null) {
                 JsonObject phones = userInfo.getAsJsonObject("phones");
                 for (Map.Entry<String, JsonElement> entry: phones.entrySet()) {
@@ -94,12 +94,12 @@ public class GoogleVoiceManager {
                     }
                     if (PhoneNumberUtils.compare(number, phone.get("phoneNumber").getAsString())) {
                         Log.i(TAG, "Disabling SMS forwarding to phone.");
-                        Ion.with(mContext, "https://www.google.com/voice/settings/editForwardingSms/")
-                        .setHeader("Authorization", "GoogleLogin auth=" + authToken)
-                        .setBodyParameter("phoneId", entry.getKey())
-                        .setBodyParameter("enabled", "0")
-                        .setBodyParameter("_rnr_se", rnrse)
-                        .asJsonObject();
+                        Ion.with(mContext).load("https://www.google.com/voice/settings/editForwardingSms/")
+                                .setHeader("Authorization", "GoogleLogin auth=" + authToken)
+                                .setBodyParameter("phoneId", entry.getKey())
+                                .setBodyParameter("enabled", "0")
+                                .setBodyParameter("_rnr_se", rnrse)
+                                .asJsonObject();
                         break;
                     }
                 }
@@ -111,9 +111,9 @@ public class GoogleVoiceManager {
     }
 
     private static Bundle getAccountBundle(Context context, String account) throws Exception {
-        AccountManager am = AccountManager.get(context);
-        if (am != null) {
-            return am.getAuthToken(new Account(account, "com.google"), "grandcentral", null, true, null, null)
+        AccountManager accountManager = AccountManager.get(context);
+        if (accountManager != null) {
+            return accountManager.getAuthToken(new Account(account, "com.google"), "grandcentral", null, true, null, null)
                     .getResult();
         }
         return null;
@@ -124,10 +124,10 @@ public class GoogleVoiceManager {
         return bundle.getString(AccountManager.KEY_AUTHTOKEN);
     }
     
-    // hit the google voice api to send a text
+    // Hit the Google Voice API to send a text
     public void sendGvMessage(String number, String text) throws Exception {
         final String authToken = getAuthToken();
-        JsonObject json = Ion.with(mContext, "https://www.google.com/voice/sms/send/")
+        JsonObject json = Ion.with(mContext).load("https://www.google.com/voice/sms/send/")
                 .onHeaders(new GvHeadersCallback(mContext, authToken))
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .setBodyParameter("phoneNumber", number)
@@ -150,12 +150,12 @@ public class GoogleVoiceManager {
     public void markGvMessageRead(String id, int read) throws Exception {
         final String authToken = getAuthToken();
         Log.d(TAG, "Marking messsage " + id + " as read");
-        Ion.with(mContext, "https://www.google.com/voice/inbox/mark/")
-        .onHeaders(new GvHeadersCallback(mContext, authToken))
-        .setHeader("Authorization", "GoogleLogin auth=" + authToken)
-        .setBodyParameter("messages", id)
-        .setBodyParameter("read", String.valueOf(read))
-        .setBodyParameter("_rnr_se", getRnrse());
+        Ion.with(mContext).load("https://www.google.com/voice/inbox/mark/")
+                .onHeaders(new GvHeadersCallback(mContext, authToken))
+                .setHeader("Authorization", "GoogleLogin auth=" + authToken)
+                .setBodyParameter("messages", id)
+                .setBodyParameter("read", String.valueOf(read))
+                .setBodyParameter("_rnr_se", getRnrse());
     }
     
     // refresh the messages that were on the server
@@ -171,7 +171,7 @@ public class GoogleVoiceManager {
         // tokens!
         final String authToken = getAuthToken();
 
-        Payload payload = Ion.with(mContext, "https://www.google.com/voice/request/messages")
+        Payload payload = Ion.with(mContext).load("https://www.google.com/voice/request/messages")
                 .onHeaders(new GvHeadersCallback(mContext, authToken))
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .as(Payload.class)
@@ -188,12 +188,12 @@ public class GoogleVoiceManager {
             @Override
             public void run() {
                 try {
-                    // grab the auth token
+                    // Grab the auth token
                     Bundle bundle = getAccountBundle(context, account);
                     String authToken = bundle.getString(AccountManager.KEY_AUTHTOKEN);
-                    AccountManager am = AccountManager.get(context);
-                    if (am != null) {
-                        am.invalidateAuthToken("com.google", authToken);
+                    AccountManager accountManager = AccountManager.get(context);
+                    if (accountManager != null) {
+                        accountManager.invalidateAuthToken("com.google", authToken);
                         Log.i(TAG, "Token invalidated.");
                     } else {
                         throw new Exception("No account manager found");
@@ -207,11 +207,10 @@ public class GoogleVoiceManager {
     }
 
     public static void getToken(final Context context, final Account account) {
-        AccountManager am = AccountManager.get(context);
-        if (am == null)
-            return;
+        AccountManager accountManager = AccountManager.get(context);
+        if (accountManager == null) return;
 
-        am.getAuthToken(account, "grandcentral", null, false, new AccountManagerCallback<Bundle>() {
+        accountManager.getAuthToken(account, "grandcentral", null, false, new AccountManagerCallback<Bundle>() {
             @Override
             public void run(AccountManagerFuture<Bundle> future) {
                 try {
@@ -220,13 +219,10 @@ public class GoogleVoiceManager {
                     context.startService(intent);
 
                     Log.i(TAG, "Token retrieved.");
-                }
-                catch (Exception ex) {
-                    ex.printStackTrace();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
             }
         }, new Handler());
     }
-    
-    
 }

@@ -12,18 +12,14 @@ import com.runnirr.xvoiceplus.gv.GoogleVoiceManager;
 
 public class AccountListPreferences extends ListPreference {
 
-    private static final String TAG = AccountListPreferences.class.getName();
-
-    public AccountListPreferences(Context context) {
-        this(context, null);
-    }
+    private static final String TAG = AccountListPreferences.class.getSimpleName();
 
     public AccountListPreferences(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        AccountManager am = AccountManager.get(context);
-        if (am != null) {
-            final Account[] accounts = am.getAccountsByType("com.google");
+        AccountManager accountManager = AccountManager.get(context);
+        if (accountManager != null) {
+            final Account[] accounts = accountManager.getAccountsByType("com.google");
             String[] entries = new String[accounts.length];
             for (int i = 0; i < accounts.length; i++) {
                 entries[i] = accounts[i].name;

@@ -23,11 +23,11 @@ public class XVoicePlusSetup extends Activity implements OnSharedPreferenceChang
     @Override
     public void onResume() {
         super.onResume();
-        PreferenceScreen ps = mVPFragment.getPreferenceScreen();
-        if (ps != null) {
-            SharedPreferences sp = ps.getSharedPreferences();
-            if (sp != null) {
-                sp.registerOnSharedPreferenceChangeListener(this);
+        PreferenceScreen preferenceScreen = mVPFragment.getPreferenceScreen();
+        if (preferenceScreen != null) {
+            SharedPreferences sharedPreferences = preferenceScreen.getSharedPreferences();
+            if (sharedPreferences != null) {
+                sharedPreferences.registerOnSharedPreferenceChangeListener(this);
             }
         }
     }
@@ -35,11 +35,11 @@ public class XVoicePlusSetup extends Activity implements OnSharedPreferenceChang
     @Override
     public void onPause() {
         super.onPause();
-        PreferenceScreen ps = mVPFragment.getPreferenceScreen();
-        if (ps != null) {
-            SharedPreferences sp = ps.getSharedPreferences();
-            if (sp != null) {
-                sp.unregisterOnSharedPreferenceChangeListener(this);
+        PreferenceScreen preferenceScreen = mVPFragment.getPreferenceScreen();
+        if (preferenceScreen != null) {
+            SharedPreferences sharedPreferences = preferenceScreen.getSharedPreferences();
+            if (sharedPreferences != null) {
+                sharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
             }
         }
     }
