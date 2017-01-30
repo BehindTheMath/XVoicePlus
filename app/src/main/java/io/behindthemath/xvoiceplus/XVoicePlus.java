@@ -205,7 +205,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                         final int ARGUMENT_INDEX_CALLING_UID = 14;
                         int callingUid = (int) param.args[ARGUMENT_INDEX_CALLING_UID];
                         // Get our UID
-                        int appUid = AndroidAppHelper.currentApplication().getPackageManager().getApplicationInfo("io.behindthemath.xvoiceplusplus", PackageManager.GET_META_DATA).uid;
+                        int appUid = AndroidAppHelper.currentApplication().getPackageManager().getApplicationInfo("io.behindthemath.xvoiceplus", PackageManager.GET_META_DATA).uid;
                         // If the broadcast is from us
                         if (callingUid == appUid) {
                             Log.d(TAG, "Hooking broadcast permissions: Overriding callingUid "

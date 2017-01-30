@@ -41,8 +41,8 @@
 
         <receiver android:name="io.behindthemath.xvoiceplus.receivers.MessageEventReceiver">
             <intent-filter>
-                <action android:name="com.runnirr.xvoiceplus.INCOMING_VOICE" />
-                <action android:name="com.runnirr.xvoiceplus.OUTGOING_SMS" />
+                <action android:name="io.behindthemath.xvoiceplus.INCOMING_VOICE" />
+                <action android:name="io.behindthemath.xvoiceplus.OUTGOING_SMS" />
             </intent-filter>
         </receiver>
 
@@ -56,7 +56,7 @@
             android:name="io.behindthemath.xvoiceplus.receivers.UserPollReceiver"
             android:exported="false">
             <intent-filter>
-                <action android:name="com.runnirr.xvoiceplus.USER_POLL" />
+                <action android:name="io.behindthemath.xvoiceplus.USER_POLL" />
             </intent-filter>
         </receiver>
     </application>

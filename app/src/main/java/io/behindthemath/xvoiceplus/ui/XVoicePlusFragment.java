@@ -20,7 +20,7 @@ public class XVoicePlusFragment extends PreferenceFragment {
         addPreferencesFromResource(R.xml.preferences);
         Activity activity = getActivity();
         if (activity != null) {
-            Log.d("XVoicePlusPlusFragment", "Starting XVoicePlusPlusService...");
+            Log.d("XVoicePlusFragment", "Starting XVoicePlusService...");
             activity.startService(new Intent(activity, XVoicePlusService.class));
         }
     }
