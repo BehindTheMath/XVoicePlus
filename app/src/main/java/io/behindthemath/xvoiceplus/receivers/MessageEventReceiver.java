@@ -14,7 +14,8 @@ public class MessageEventReceiver extends XVoicePlusReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        if (isEnabled(context)) {
+        if (isEnabled(context) && (INCOMING_VOICE.equals(intent.getAction()) ||
+                OUTGOING_SMS.equals(intent.getAction()))) {
             Log.d(TAG, "Received intent for " + intent.getAction());
 
             abortBroadcast();
