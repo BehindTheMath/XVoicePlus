@@ -8,8 +8,8 @@ android {
         applicationId "io.behindthemath.xvoiceplus"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 16
-        versionName "3.0.0"
+        versionCode 1
+        versionName "0.0.1"
 
     }
 
