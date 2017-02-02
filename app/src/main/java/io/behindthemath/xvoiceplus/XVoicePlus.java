@@ -10,6 +10,7 @@ import android.content.res.XResources;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Process;
+import android.os.UserHandle;
 import android.telephony.SmsManager;
 import android.util.Log;
 
@@ -205,9 +206,10 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                         final int ARGUMENT_INDEX_CALLING_UID = 14;
                         int callingUid = (int) param.args[ARGUMENT_INDEX_CALLING_UID];
                         // Get our UID
-                        int appUid = AndroidAppHelper.currentApplication().getPackageManager().getApplicationInfo("io.behindthemath.xvoiceplus", PackageManager.GET_META_DATA).uid;
+                        int appUid = AndroidAppHelper.currentApplication().getPackageManager()
+                                .getApplicationInfo(XVOICE_PLUS_PACKAGE, PackageManager.GET_META_DATA).uid;
                         // If the broadcast is from us
-                        if (callingUid == appUid) {
+                        if ((boolean) callMethod(UserHandle.class, "isSameApp", callingUid, appUid)) {
                             Log.d(TAG, "Hooking broadcast permissions: Overriding callingUid "
                                     + callingUid + " with Process.PHONE_UID (UID 1001)");
                             // Spoof the broadcast as if it's coming from PHONE_UID, so the system will let it through
