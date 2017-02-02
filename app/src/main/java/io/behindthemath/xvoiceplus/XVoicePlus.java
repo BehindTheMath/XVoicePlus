@@ -131,11 +131,14 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
         findAndHookMethod(packageManagerServiceClass, "grantPermissionsLPw", "android.content.pm.PackageParser.Package",
                 boolean.class, String.class, new XC_MethodHook() {
+                    @SuppressWarnings("unchecked")
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                         final String pkgName = (String) getObjectField(param.args[0], "packageName");
 
                         if (XVOICE_PLUS_PACKAGE.equals(pkgName)) {
+                            Log.d(TAG, "Fixing permissions for " + XVOICE_PLUS_PACKAGE);
+
                             // Returns: (PackageSetting) Object PackageParser$Package.mExtras
                             final Object extras = getObjectField(param.args[0], "mExtras");
 
@@ -160,7 +163,8 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                                     Log.d(TAG, "Permission added: " + broadcastSmsPermission);
                                 }
                             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                                //Based on https://github.com/wasdennnoch/AndroidN-ify/blob/ebb3a60a155b30dc177cf4968cb28d1254171851/app/src/main/java/tk/wasdennnoch/androidn_ify/utils/PermissionGranter.java#L74-#L89
+                                // Based on https://github.com/wasdennnoch/AndroidN-ify/blob/ebb3a60a155b30dc177cf4968cb28d1254171851/app/src/main/java/tk/wasdennnoch/androidn_ify/utils/PermissionGranter.java#L74-#L89
+                                // and https://github.com/GravityBox/GravityBox/blob/marshmallow/src/com/ceco/marshmallow/gravitybox/PermissionGranter.java
                                 final Object permissionsState = callMethod(extras, "getPermissionsState");
 
                                 if (!(boolean) callMethod(permissionsState, "hasInstallPermission", BROADCAST_SMS_PERMISSION)) {
