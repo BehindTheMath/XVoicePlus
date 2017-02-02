@@ -166,8 +166,9 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                                     // Try granting the permission
                                     int ret = (int) callMethod(permissionsState, "grantInstallPermission", broadcastSmsPermission);
 
-                                    Class<?> clazz = findClass("com.android.server.pm.PermissionsState", null);
-                                    final int PERMISSION_OPERATION_FAILURE = getStaticIntField(clazz, "PERMISSION_OPERATION_FAILURE");
+                                    // com.android.server.pm.PermissionsState.PERMISSION_OPERATION_FAILURE
+                                    final int PERMISSION_OPERATION_FAILURE = -1;
+
                                     if (ret != PERMISSION_OPERATION_FAILURE) {
                                         Log.d(TAG, "Permission added: " + broadcastSmsPermission);
                                     } else {
