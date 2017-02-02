@@ -159,7 +159,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                                     int[] grantedPermissionsGids = (int[]) getObjectField(extras, "gids");
                                     // Returns: BasePermission.gids
                                     int[] broadcastSmsPermissionGids = (int[]) getObjectField(broadcastSmsPermission, "gids");
-                                    grantedPermissionsGids = (int[]) callStaticMethod(param.thisObject.getClass(), "appendInts", grantedPermissionsGids, broadcastSmsPermissionGids);
+                                    callStaticMethod(param.thisObject.getClass(), "appendInts", grantedPermissionsGids, broadcastSmsPermissionGids);
                                     Log.d(TAG, "Permission added: " + broadcastSmsPermission);
                                 }
                             } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
