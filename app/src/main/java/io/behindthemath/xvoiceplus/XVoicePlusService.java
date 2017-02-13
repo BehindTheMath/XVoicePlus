@@ -68,10 +68,10 @@ public class XVoicePlusService extends IntentService {
 
     @Override
     protected void onHandleIntent(final Intent intent) {
-        if ((!getSettings().getBoolean("settings_enabled", false)) ||
-                intent.getAction() == null) {
+        if ((!getSettings().getBoolean("settings_enabled", false)) || intent.getAction() == null) {
             return;
         }
+
         Log.d(TAG, "Handling intent for action " + intent.getAction());
 
         // Handle an outgoing SMS
@@ -202,18 +202,18 @@ public class XVoicePlusService extends IntentService {
             return;
         }
         catch (Exception e) {
-            Log.d(TAG, "send error", e);
+            Log.d(TAG, "Send error", e);
         }
 
         try {
             // on failure, fetch info and try again
             mGVManager.refreshAuth();
             mGVManager.sendGvMessage(destAddr, text);
-            if(syncEnabled())addRecent(text);
+            if (syncEnabled()) addRecent(text);
             success(sentIntents);
         }
         catch (Exception e) {
-            Log.d(TAG, "send failure", e);
+            Log.d(TAG, "Send failure", e);
             fail(sentIntents);
         }
     }
