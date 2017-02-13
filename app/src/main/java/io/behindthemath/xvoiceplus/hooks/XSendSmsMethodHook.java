@@ -40,14 +40,11 @@ public class XSendSmsMethodHook extends XC_MethodHook {
 
     @SuppressWarnings("unchecked")
     private void attemptSendViaGoogleVoice(final MethodHookParam param) {
-        String destAddr;
-        String scAddr;
-        ArrayList<String> texts;
-        ArrayList<PendingIntent> sentIntents;
-        ArrayList<PendingIntent> deliveryIntents;
-
-        destAddr = (String)param.args[0];
-        scAddr = (String) param.args[1];
+        String destAddr = (String) param.args[0];
+        String scAddr = (String) param.args[1];
+        ArrayList<String> texts = new ArrayList<>();
+        ArrayList<PendingIntent> sentIntents = new ArrayList<>();
+        ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
 
         if ("sendTextMessage".equals(param.method.getName())) {
             texts = new ArrayList<String>(Collections.singletonList((String) param.args[2]));
@@ -57,9 +54,6 @@ public class XSendSmsMethodHook extends XC_MethodHook {
             texts = (ArrayList<String>) param.args[2];
             sentIntents = (ArrayList<PendingIntent>) param.args[3];
             deliveryIntents = (ArrayList<PendingIntent>) param.args[4];
-        } else {
-            // We should never get here; it's just to get rid of the "variable might not have been initialized" warnings
-            return;
         }
 
         try {
