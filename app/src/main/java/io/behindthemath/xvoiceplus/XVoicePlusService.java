@@ -17,6 +17,7 @@ import io.behindthemath.xvoiceplus.receivers.BootCompletedReceiver;
 import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 import io.behindthemath.xvoiceplus.receivers.UserPollReceiver;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
@@ -100,6 +101,7 @@ public class XVoicePlusService extends IntentService {
 
         // Boot
         } else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
+            fixSharedPrefsPermissions();
             if(getSettings().getBoolean("settings_sync_on_boot", false)) {
                 Log.d(TAG, "Sync on boot enabled.");
                 startRefresh();
@@ -395,5 +397,25 @@ public class XVoicePlusService extends IntentService {
         return(getSettings().getBoolean("settings_sync_on_receive", false) |
                 getSettings().getBoolean("settings_sync_on_send", false) |
                 Long.valueOf(getSettings().getString("settings_polling_frequency", "-1")) != -1L);
+    }
+
+    /**
+     * Sometimes the filesystem permissions of the data folder, the shared_prefs folder, and/or the
+     * preferences file get set with the wrong permissions. In such a case, XSharedPreferences can't
+     * access it, and always returns the default value. This fixes the permissions to allow it to be
+     * read.
+     */
+    private void fixSharedPrefsPermissions() {
+        Log.d(TAG, "Fixing file and folder permmisions");
+
+        Context context = getApplicationContext();
+        Log.d(TAG, "Setting data folder readable. Result: " + Boolean.toString(context.getFilesDir().setReadable(true, false)));
+
+        String sharedPrefsFolderPath = context.getFilesDir().getAbsolutePath() + "/../shared_prefs";
+        File sharedPrefsFolder = new File(sharedPrefsFolderPath);
+        Log.d(TAG, "Setting shared_prefs folder readable. Result: " + Boolean.toString(sharedPrefsFolder.setReadable(true, false)));
+
+        File sharedPrefsFile = new File(sharedPrefsFolderPath + "/" + XVoicePlus.XVOICE_PLUS_PACKAGE + "_preferences.xml");
+        Log.d(TAG, "Setting preferences file readable. Result: " + Boolean.toString(sharedPrefsFile.setReadable(true, false)));
     }
 }
