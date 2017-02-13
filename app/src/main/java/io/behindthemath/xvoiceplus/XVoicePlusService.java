@@ -49,7 +49,7 @@ public class XVoicePlusService extends IntentService {
     }
 
     private SharedPreferences getSettings() {
-        return getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
+        return getSharedPreferences(XVoicePlus.XVOICE_PLUS_PACKAGE + "_preferences", Context.MODE_WORLD_READABLE);
     }
 
     /**

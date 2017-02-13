@@ -35,7 +35,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public static final String TAG = XVoicePlus.class.getName();
 
     private static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
-    private static final String XVOICE_PLUS_PACKAGE = "io.behindthemath.xvoiceplus";
+    public static final String XVOICE_PLUS_PACKAGE = BuildConfig.APPLICATION_ID;
     private static final String BROADCAST_SMS_PERMISSION = "android.permission.BROADCAST_SMS";
 
     public static final String APP_NAME = XVoicePlus.class.getSimpleName();
