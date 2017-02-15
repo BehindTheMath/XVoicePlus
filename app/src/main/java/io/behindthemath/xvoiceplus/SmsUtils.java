@@ -89,7 +89,7 @@ public class SmsUtils {
      * @param pdu
      */
     private static void broadcastMessage(Context context, byte[] pdu) {
-        Log.d(TAG, "Creating fake sms. Broadcasting...");
+        Log.d(TAG, "Creating fake SMS. Broadcasting...");
         //Log.d(TAG, "Broadcasting pdu " + bytesToHex(pdu));
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
