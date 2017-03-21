@@ -31,7 +31,13 @@ public class XVoicePlusFragment extends PreferenceFragment {
         PreferenceScreen preferenceScreen = getPreferenceScreen();
         for (int i = 0; i < preferenceScreen.getPreferenceCount(); i++) {
             String key = preferenceScreen.getPreference(i).getKey();
-            updateSummary(key);
+
+            // The "user_hash" preference should be hidden
+            if ("user_hash".equals(key)) {
+                preferenceScreen.removePreference(preferenceScreen.getPreference(i));
+            } else {
+                updateSummary(key);
+            }
         }
 
         return result;

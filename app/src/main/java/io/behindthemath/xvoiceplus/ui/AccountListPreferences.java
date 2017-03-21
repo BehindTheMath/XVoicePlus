@@ -31,16 +31,26 @@ public class AccountListPreferences extends ListPreference {
 
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
-                    String newAccountString = (String) newValue;
-                    Log.d(TAG, "Account changed to " + newValue);
-                    for (Account account : accounts) {
-                        if (account.name.equals(newAccountString)) {
-                            SharedPreferences prefs = getSharedPreferences();
-                            if (prefs != null) {
-                                final String previousAccount = prefs.getString("account", null);
+                    SharedPreferences prefs = getSharedPreferences();
+                    if (prefs != null) {
+                        final String previousAccount = prefs.getString("account", null);
+                        final String newAccountString = (String) newValue;
+
+                        // If this is the same account, just ignore it
+                        if (newValue.equals(previousAccount)) return false;
+
+                        Log.d(TAG, "Account changed to " + newAccountString);
+                        for (Account account : accounts) {
+                            if (account.name.equals(newAccountString)) {
                                 GoogleVoiceManager.invalidateToken(getContext(), previousAccount);
 
                                 GoogleVoiceManager.getToken(getContext(), account);
+                                /*
+                                 * We can't get the new user_hash from GV SharedPrefs here, so we'll
+                                 * wait for the next incoming message, and then use XSharedPreferences
+                                 * to get it. Right now we'll just clear the old one.
+                                 */
+                                prefs.edit().putString("user_hash", null).apply();
 
                                 return true;
                             }

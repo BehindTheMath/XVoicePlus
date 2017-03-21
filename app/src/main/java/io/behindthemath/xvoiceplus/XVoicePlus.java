@@ -14,34 +14,58 @@ import android.os.UserHandle;
 import android.telephony.SmsManager;
 import android.util.Log;
 
-import io.behindthemath.xvoiceplus.hooks.XSendSmsMethodHook;
-import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
+import com.crossbowffs.remotepreferences.RemotePreferenceAccessException;
+import com.crossbowffs.remotepreferences.RemotePreferences;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Set;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XSharedPreferences;
 import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
+import io.behindthemath.xvoiceplus.hooks.GCMListenerServiceHook;
+import io.behindthemath.xvoiceplus.hooks.XSendSmsMethodHook;
+import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 
-import static de.robv.android.xposed.XposedHelpers.*;
+import static de.robv.android.xposed.XposedHelpers.ClassNotFoundError;
+import static de.robv.android.xposed.XposedHelpers.callMethod;
+import static de.robv.android.xposed.XposedHelpers.callStaticMethod;
+import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
+import static de.robv.android.xposed.XposedHelpers.findClass;
+import static de.robv.android.xposed.XposedHelpers.getObjectField;
+import static de.robv.android.xposed.XposedHelpers.setIntField;
 
 public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit {
     public static final String TAG = XVoicePlus.class.getName();
 
-    private static final String GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
     public static final String XVOICE_PLUS_PACKAGE = BuildConfig.APPLICATION_ID;
+    public static final String APP_NAME = TAG;
+    public static final String XVOICE_PLUS_PREFERENCES_FILE_NAME = XVOICE_PLUS_PACKAGE + "_preferences";
+
+    private static final String LEGACY_GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
+    public static final String NEW_GOOGLE_VOICE_PACKAGE = "com.google.android.apps.voice";
+    private static final String NEW_GOOGLE_VOICE_GCM_PACKAGE = NEW_GOOGLE_VOICE_PACKAGE + ".backends.gcm";
+
     private static final String BROADCAST_SMS_PERMISSION = "android.permission.BROADCAST_SMS";
 
-    public static final String APP_NAME = XVoicePlus.class.getSimpleName();
 
     public static boolean isEnabled() {
-        return new XSharedPreferences(XVOICE_PLUS_PACKAGE).getBoolean("settings_enabled", true);
+        //return new XSharedPreferences(XVOICE_PLUS_PLUS_PACKAGE).getBoolean("settings_enabled", false);
+
+        Context appContext = AndroidAppHelper.currentApplication().getApplicationContext();
+        boolean settingsEnabled;
+
+        try {
+            settingsEnabled = new RemotePreferences(appContext, XVOICE_PLUS_PACKAGE, XVOICE_PLUS_PREFERENCES_FILE_NAME, true)
+                    .getBoolean("settings_enabled", false);
+        } catch (RemotePreferenceAccessException e) {
+            Log.e(TAG, "Error accessing settings_enabled from RemotePreferences: ", e);
+            return false;
+        }
+
+        return settingsEnabled;
     }
 
     @Override
@@ -86,7 +110,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
             }
         }
 
-        if (GOOGLE_VOICE_PACKAGE.equals(lpparam.packageName)) {
+        if (LEGACY_GOOGLE_VOICE_PACKAGE.equals(lpparam.packageName)) {
             hookGoogleVoice(lpparam);
         }
     }
@@ -218,33 +242,50 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
      * @param lpparam
      */
     private void hookGoogleVoice(LoadPackageParam lpparam) {
-        Log.d(TAG, "Hooking Google Voice push notifications");
+        Log.d(TAG, "Hooking Google Voice incoming push notifications");
 
-        findAndHookMethod(GOOGLE_VOICE_PACKAGE + ".PushNotificationReceiver", lpparam.classLoader,
-                "onReceive", Context.class, Intent.class, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Log.d(TAG, "Received incoming Google Voice notification");
+        // Try to hook GV 5.0+ first
+        try {
+            findAndHookMethod(NEW_GOOGLE_VOICE_GCM_PACKAGE + ".GcmListenerService", lpparam.classLoader,
+                    "a", String.class, Bundle.class, new GCMListenerServiceHook());
+        } catch (NoSuchMethodError e) {
+            Log.e(TAG, "Error hooking GV 5.0+: ", e);
+        } catch (ClassNotFoundError e) {
+            Log.d(TAG, "GV 5.0+ was not found. Trying to hook legacy GV (version 0.4.7.10 or lower)");
 
-                        if (isEnabled()) {
-                            Context context = (Context) param.args[0];
-                            Intent gvIntent = (Intent) param.args[1];
+            // If we can't find GV 5.0+, try to hook the legacy version (0.4.7.10 or lower)
+            try {
+                findAndHookMethod(LEGACY_GOOGLE_VOICE_PACKAGE + ".PushNotificationReceiver", lpparam.classLoader,
+                        "onReceive", Context.class, Intent.class, new XC_MethodHook() {
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                Log.d(TAG, "Received incoming Google Voice notification");
 
-                            if (gvIntent == null || gvIntent.getExtras() == null) {
-                                Log.w(TAG, "Null intent when hooking incoming GV message");
-                            } else if (gvIntent.getExtras().getString("sender_address") == null) {
-                                Log.d(TAG, "sender_address == null, so this must be a dummy intent, so we'll ignore it");
-                            } else {
-                                // Send the incoming message to be processed
-                                Intent intent = new Intent()
-                                        .setAction(MessageEventReceiver.INCOMING_VOICE)
-                                        .putExtras(gvIntent.getExtras());
-                                context.sendOrderedBroadcast(intent, null);
+                                if (isEnabled()) {
+                                    Context context = (Context) param.args[0];
+                                    Intent gvIntent = (Intent) param.args[1];
+
+                                    if (gvIntent == null || gvIntent.getExtras() == null) {
+                                        Log.w(TAG, "Null intent when hooking incoming GV message");
+                                    } else if (gvIntent.getExtras().getString("sender_address") == null) {
+                                        Log.d(TAG, "sender_address == null, so this must be a dummy intent, so we'll ignore it");
+                                    } else {
+                                        // Send the incoming message to be processed
+                                        Intent intent = new Intent()
+                                                .setAction(MessageEventReceiver.INCOMING_VOICE)
+                                                .putExtras(gvIntent.getExtras());
+                                        context.sendOrderedBroadcast(intent, null);
+                                    }
+                                } else {
+                                    Log.d(TAG, "Module is disabled, so ignoring the incoming message");
+                                }
                             }
-                        } else {
-                            Log.d(TAG, "Module is disabled, so ignoring the incoming message");
-                        }
-                    }
-                });
+                        });
+            } catch (NoSuchMethodError error) {
+                Log.e(TAG, "Error hooking legacy GV (version 0.4.7.10 or lower): ", error);
+            } catch (ClassNotFoundError error) {
+                Log.e(TAG, "Google Voice could not be found. Incoming messages will not be intercepted", error);
+            }
+        }
     }
 }

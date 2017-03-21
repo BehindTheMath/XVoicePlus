@@ -75,4 +75,7 @@
         android:defaultValue="false"
         android:persistent="true"/>
 -->
+    <Preference
+        android:key="user_hash"
+        android:persistent="true"/>
 </PreferenceScreen>

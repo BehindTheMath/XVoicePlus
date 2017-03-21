@@ -10,6 +10,17 @@ import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
 import android.util.Log;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
 import io.behindthemath.xvoiceplus.gv.GoogleVoiceManager;
 import io.behindthemath.xvoiceplus.gv.GvResponse.Conversation;
 import io.behindthemath.xvoiceplus.gv.GvResponse.Message;
@@ -17,10 +28,7 @@ import io.behindthemath.xvoiceplus.receivers.BootCompletedReceiver;
 import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 import io.behindthemath.xvoiceplus.receivers.UserPollReceiver;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.*;
-
+import static io.behindthemath.xvoiceplus.XVoicePlus.XVOICE_PLUS_PREFERENCES_FILE_NAME;
 
 public class XVoicePlusService extends IntentService {
     private static final String TAG = XVoicePlusService.class.getSimpleName();
@@ -49,7 +57,7 @@ public class XVoicePlusService extends IntentService {
     }
 
     private SharedPreferences getSettings() {
-        return getSharedPreferences(XVoicePlus.XVOICE_PLUS_PACKAGE + "_preferences", Context.MODE_WORLD_READABLE);
+        return getSharedPreferences(XVOICE_PLUS_PREFERENCES_FILE_NAME, Context.MODE_WORLD_READABLE);
     }
 
     /**
@@ -101,7 +109,6 @@ public class XVoicePlusService extends IntentService {
 
         // Boot
         } else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
-            fixSharedPrefsPermissions();
             if(getSettings().getBoolean("settings_sync_on_boot", false)) {
                 Log.d(TAG, "Sync on boot enabled.");
                 startRefresh();
@@ -397,25 +404,5 @@ public class XVoicePlusService extends IntentService {
         return(getSettings().getBoolean("settings_sync_on_receive", false) |
                 getSettings().getBoolean("settings_sync_on_send", false) |
                 Long.valueOf(getSettings().getString("settings_polling_frequency", "-1")) != -1L);
-    }
-
-    /**
-     * Sometimes the filesystem permissions of the data folder, the shared_prefs folder, and/or the
-     * preferences file get set with the wrong permissions. In such a case, XSharedPreferences can't
-     * access it, and always returns the default value. This fixes the permissions to allow it to be
-     * read.
-     */
-    private void fixSharedPrefsPermissions() {
-        Log.d(TAG, "Fixing file and folder permmisions");
-
-        Context context = getApplicationContext();
-        Log.d(TAG, "Setting data folder readable. Result: " + Boolean.toString(context.getFilesDir().setReadable(true, false)));
-
-        String sharedPrefsFolderPath = context.getFilesDir().getAbsolutePath() + "/../shared_prefs";
-        File sharedPrefsFolder = new File(sharedPrefsFolderPath);
-        Log.d(TAG, "Setting shared_prefs folder readable. Result: " + Boolean.toString(sharedPrefsFolder.setReadable(true, false)));
-
-        File sharedPrefsFile = new File(sharedPrefsFolderPath + "/" + XVoicePlus.XVOICE_PLUS_PACKAGE + "_preferences.xml");
-        Log.d(TAG, "Setting preferences file readable. Result: " + Boolean.toString(sharedPrefsFile.setReadable(true, false)));
     }
 }
