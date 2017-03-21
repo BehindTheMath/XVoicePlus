@@ -128,10 +128,10 @@ public class XVoicePlusService extends IntentService {
     public static void fail(List<PendingIntent> sentIntents) {
         if (sentIntents == null)
             return;
-        for (PendingIntent si: sentIntents) {
-            if (si != null){
+        for (PendingIntent sentIntent: sentIntents) {
+            if (sentIntent != null){
                 try {
-                    si.send();
+                    sentIntent.send();
                 }
                 catch (Exception e) {
                     Log.w(TAG, "Error marking failed intent", e);
