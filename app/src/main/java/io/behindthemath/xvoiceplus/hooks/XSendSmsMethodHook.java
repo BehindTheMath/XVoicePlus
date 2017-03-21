@@ -56,22 +56,18 @@ public class XSendSmsMethodHook extends XC_MethodHook {
             deliveryIntents = (ArrayList<PendingIntent>) param.args[4];
         }
 
-        try {
-            if (sendText(destAddr, scAddr, texts, sentIntents, deliveryIntents)) {
-                Log.i(TAG, "Intent for message to be sent via GV successful");
-            } else {
-                Log.i(TAG, "Send text failed.");
-                // If it fails, fail the message
-                XVoicePlusService.fail(sentIntents);
-            }
-        } catch (IOException e) {
-            Log.e(TAG, "Error attempting to send message via Google Voice", e);
+        if (sendText(destAddr, scAddr, texts, sentIntents, deliveryIntents)) {
+            Log.i(TAG, "Intent for message to be sent via GV successful");
+        } else {
+            Log.i(TAG, "Send text failed.");
+            // If it fails, fail the message
             XVoicePlusService.fail(sentIntents);
         }
     }
 
     private boolean sendText(String destAddr, String scAddr, ArrayList<String> texts,
-                             final ArrayList<PendingIntent> sentIntents, final ArrayList<PendingIntent> deliveryIntents) throws IOException {
+                             final ArrayList<PendingIntent> sentIntents,
+                             final ArrayList<PendingIntent> deliveryIntents) {
 
         Context context = AndroidAppHelper.currentApplication();
         if (context != null) {
