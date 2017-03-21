@@ -38,7 +38,7 @@ import static de.robv.android.xposed.XposedHelpers.getObjectField;
 import static de.robv.android.xposed.XposedHelpers.setIntField;
 
 public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit {
-    public static final String TAG = XVoicePlus.class.getName();
+    public static final String TAG = XVoicePlus.class.getSimpleName();
 
     public static final String XVOICE_PLUS_PACKAGE = BuildConfig.APPLICATION_ID;
     public static final String APP_NAME = TAG;
