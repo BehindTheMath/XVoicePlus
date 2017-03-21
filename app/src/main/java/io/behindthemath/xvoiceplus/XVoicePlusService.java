@@ -109,7 +109,7 @@ public class XVoicePlusService extends IntentService {
 
         // Boot
         } else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
-            if(getSettings().getBoolean("settings_sync_on_boot", false)) {
+            if (getSettings().getBoolean("settings_sync_on_boot", false)) {
                 Log.d(TAG, "Sync on boot enabled.");
                 startRefresh();
             }
@@ -121,7 +121,10 @@ public class XVoicePlusService extends IntentService {
         }
     }
 
-    // Mark all sent intents as failures
+    /** Mark all sent intents as failures.
+     *
+     * @param sentIntents A list of {@link PendingIntent}s to broadcast when the message is sent.
+     */
     public static void fail(List<PendingIntent> sentIntents) {
         if (sentIntents == null)
             return;
@@ -269,8 +272,8 @@ public class XVoicePlusService extends IntentService {
     }
 
     void synthesizeMessage(Message message) {
-        if (!messageExists(message, URI_RECEIVED)){
-            try{
+        if (!messageExists(message, URI_RECEIVED)) {
+            try {
                 SmsUtils.createFakeSms(this, message.phoneNumber, messageWithPrefixSuffix(message.message), message.date);
             } catch (IOException e) {
                 Log.e(TAG, "IOException when creating fake SMS, ignoring.", e);
@@ -339,7 +342,7 @@ public class XVoicePlusService extends IntentService {
         List<Conversation> conversations = mGVManager.retrieveMessages();
 
         long timestamp = getAppSettings().getLong("timestamp", 0);
-        LinkedList<Message> newMessages = new LinkedList<Message>();
+        LinkedList<Message> newMessages = new LinkedList<>();
         for (Conversation conversation: conversations) {
             for (Message m : conversation.messages) {
                 if(m.phoneNumber != null && m.message != null) {
@@ -401,7 +404,7 @@ public class XVoicePlusService extends IntentService {
     }
 
     public boolean syncEnabled() {
-        return(getSettings().getBoolean("settings_sync_on_receive", false) |
+        return (getSettings().getBoolean("settings_sync_on_receive", false) |
                 getSettings().getBoolean("settings_sync_on_send", false) |
                 Long.valueOf(getSettings().getString("settings_polling_frequency", "-1")) != -1L);
     }

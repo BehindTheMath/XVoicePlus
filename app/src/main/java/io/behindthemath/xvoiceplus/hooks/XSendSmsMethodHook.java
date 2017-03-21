@@ -47,9 +47,9 @@ public class XSendSmsMethodHook extends XC_MethodHook {
         ArrayList<PendingIntent> deliveryIntents = new ArrayList<>();
 
         if ("sendTextMessage".equals(param.method.getName())) {
-            texts = new ArrayList<String>(Collections.singletonList((String) param.args[2]));
-            sentIntents = new ArrayList<PendingIntent>(Collections.singletonList((PendingIntent) param.args[3]));
-            deliveryIntents = new ArrayList<PendingIntent>(Collections.singletonList((PendingIntent) param.args[4]));
+            texts = new ArrayList<>(Collections.singletonList((String) param.args[2]));
+            sentIntents = new ArrayList<>(Collections.singletonList((PendingIntent) param.args[3]));
+            deliveryIntents = new ArrayList<>(Collections.singletonList((PendingIntent) param.args[4]));
         } else if ("sendMultipartTextMessage".equals(param.method.getName())) {
             texts = (ArrayList<String>) param.args[2];
             sentIntents = (ArrayList<PendingIntent>) param.args[3];

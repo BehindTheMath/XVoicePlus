@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceScreen;
+
 import io.behindthemath.xvoiceplus.receivers.UserPollReceiver;
 
 public class XVoicePlusSetup extends Activity implements OnSharedPreferenceChangeListener {

@@ -8,12 +8,12 @@ public class GvResponse {
 
     public static class Payload {
         @SerializedName("messageList")
-        public ArrayList<Conversation> conversations = new ArrayList<Conversation>();
+        public ArrayList<Conversation> conversations = new ArrayList<>();
     }
 
     public static class Conversation {
         @SerializedName("children")
-        public ArrayList<Message> messages = new ArrayList<Message>();
+        public ArrayList<Message> messages = new ArrayList<>();
     }
 
     public static class Message {

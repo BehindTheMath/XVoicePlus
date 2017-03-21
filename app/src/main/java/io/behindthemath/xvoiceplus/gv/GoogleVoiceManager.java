@@ -165,7 +165,7 @@ public class GoogleVoiceManager {
         String account = getAccount();
         if (account == null) {
             Log.d(TAG, "Account not set");
-            return new ArrayList<Conversation>();
+            return new ArrayList<>();
         }
 
         Log.i(TAG, "Refreshing messages");

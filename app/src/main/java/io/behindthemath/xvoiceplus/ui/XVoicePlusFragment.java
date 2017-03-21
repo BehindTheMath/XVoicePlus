@@ -3,11 +3,16 @@ package io.behindthemath.xvoiceplus.ui;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.preference.*;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceFragment;
+import android.preference.PreferenceScreen;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
 import io.behindthemath.xvoiceplus.R;
 import io.behindthemath.xvoiceplus.XVoicePlusService;
 

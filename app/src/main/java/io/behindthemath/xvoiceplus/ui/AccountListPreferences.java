@@ -28,7 +28,6 @@ public class AccountListPreferences extends ListPreference {
             setEntryValues(entries);
 
             setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-
                 @Override
                 public boolean onPreferenceChange(Preference preference, Object newValue) {
                     SharedPreferences prefs = getSharedPreferences();

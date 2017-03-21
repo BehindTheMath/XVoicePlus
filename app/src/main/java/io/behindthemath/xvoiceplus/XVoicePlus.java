@@ -89,6 +89,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                     String.class, PendingIntent.class, PendingIntent.class, new XSendSmsMethodHook());
             findAndHookMethod(SmsManager.class, "sendMultipartTextMessage", String.class, String.class,
                     ArrayList.class, ArrayList.class, ArrayList.class, new XSendSmsMethodHook());
+
             Log.d(TAG, "Hooked SmsManager methods successfully");
         } catch (ClassNotFoundError e) {
             Log.e(TAG, "Class android.telephony.SmsManager not found", e);
@@ -142,8 +143,10 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
                             // Returns: com.android.server.pm.Settings PackageManagerService.mSettings
                             final Object settings = getObjectField(param.thisObject, "mSettings");
+
                             // Returns: ArrayMap<String, BasePermission> Settings.mPermissions
                             final Object permissions = getObjectField(settings, "mPermissions");
+
                             // Returns: BasePermission
                             final Object broadcastSmsPermission = callMethod(permissions, "get",
                                     BROADCAST_SMS_PERMISSION);
@@ -153,8 +156,10 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
 
                                 if (!grantedPermissions.contains(BROADCAST_SMS_PERMISSION)) {
                                     grantedPermissions.add(BROADCAST_SMS_PERMISSION);
+
                                     // Returns: ((PackageSetting) GrantedPermissions).gids
                                     int[] grantedPermissionsGids = (int[]) getObjectField(extras, "gids");
+
                                     // Returns: BasePermission.gids
                                     int[] broadcastSmsPermissionGids = (int[]) getObjectField(broadcastSmsPermission, "gids");
                                     callStaticMethod(param.thisObject.getClass(), "appendInts", grantedPermissionsGids, broadcastSmsPermissionGids);
