@@ -38,10 +38,7 @@ captures/
 
 # Intellij
 *.iml
-.idea/workspace.xml
-.idea/tasks.xml
-.idea/gradle.xml
-.idea/libraries
+.idea/
 
 # Keystore files
 *.jks
@@ -60,4 +57,4 @@ gen-external-apklibs
 gradle
 gradlew
 gradlew.bat
-.idea/runConfigurations.xml
+device-2017-02-15-011651.png
