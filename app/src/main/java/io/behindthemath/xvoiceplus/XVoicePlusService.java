@@ -61,7 +61,7 @@ public class XVoicePlusService extends IntentService {
     }
 
     /**
-     *  Parse out the intent extras from android.intent.action.NEW_OUTGOING_SMS and send it off via Google Voice
+     *  Parse out the intent extras from io.behindthemath.xvoiceplus.OUTGOING_SMS and send it off via Google Voice
      */
     private void handleOutgoingSms(Intent intent) {
         boolean multipart = intent.getBooleanExtra("multipart", false);
