@@ -92,17 +92,16 @@ public class SmsUtils {
         Log.d(TAG, "Creating fake SMS. Broadcasting...");
         //Log.d(TAG, "Broadcasting pdu " + bytesToHex(pdu));
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            String deliver_action = "android.provider.Telephony.SMS_DELIVER";
-            Intent intent = new Intent()
-                .setAction(deliver_action)
-                .setFlags(0)
-                .putExtra("pdus", new Object[] { pdu })
-                .putExtra("format", FORMAT_3GPP);
-            context.sendOrderedBroadcast(intent, "android.permission.RECEIVE_SMS");
-        }
-        String received_action = "android.provider.Telephony.SMS_RECEIVED";
+        String deliver_action = "android.provider.Telephony.SMS_DELIVER";
         Intent intent = new Intent()
+            .setAction(deliver_action)
+            .setFlags(0)
+            .putExtra("pdus", new Object[] { pdu })
+            .putExtra("format", FORMAT_3GPP);
+        context.sendOrderedBroadcast(intent, "android.permission.RECEIVE_SMS");
+
+        String received_action = "android.provider.Telephony.SMS_RECEIVED";
+        intent = new Intent()
             .setAction(received_action)
             .setFlags(0)
             .putExtra("pdus", new Object[] { pdu })
