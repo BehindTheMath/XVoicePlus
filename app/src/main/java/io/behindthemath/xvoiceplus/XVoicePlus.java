@@ -45,6 +45,35 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     @Override
+    public void initZygote(StartupParam startupParam) {
+        // Hooks android.* packages
+
+        // Enable SMS on tablets
+        XResources.setSystemWideReplacement("android", "bool", "config_sms_capable", true);
+
+        hookSmsManager();
+    }
+
+    /**
+     * Hooks {@link SmsManager} to intercept outgoing messages.
+     */
+    private void hookSmsManager() {
+        Log.d(TAG, "Attempting to hook SmsManager");
+
+        try {
+            findAndHookMethod(SmsManager.class, "sendTextMessage", String.class, String.class,
+                    String.class, PendingIntent.class, PendingIntent.class, new XSendSmsMethodHook());
+            findAndHookMethod(SmsManager.class, "sendMultipartTextMessage", String.class, String.class,
+                    ArrayList.class, ArrayList.class, ArrayList.class, new XSendSmsMethodHook());
+            Log.d(TAG, "Hooked SmsManager methods successfully");
+        } catch (ClassNotFoundError e) {
+            Log.e(TAG, "Class android.telephony.SmsManager not found", e);
+        } catch (NoSuchMethodError e) {
+            Log.e(TAG, "SmsManager methods not found", e);
+        }
+    }
+
+    @Override
     public void handleLoadPackage(LoadPackageParam lpparam) throws ClassNotFoundException {
         // Hooks com.android.* packages
         if (lpparam.packageName.equals("android") && lpparam.processName.equals("android")) {
@@ -60,67 +89,6 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
         if (GOOGLE_VOICE_PACKAGE.equals(lpparam.packageName)) {
             hookGoogleVoice(lpparam);
         }
-    }
-
-    /**
-     * Hooks incoming Google Voice messages.
-     * @param lpparam
-     */
-    private void hookGoogleVoice(LoadPackageParam lpparam) {
-        Log.d(TAG, "Hooking Google Voice push notifications");
-
-        findAndHookMethod(GOOGLE_VOICE_PACKAGE + ".PushNotificationReceiver", lpparam.classLoader,
-                "onReceive", Context.class, Intent.class, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                        Log.d(TAG, "Received incoming Google Voice notification");
-
-                        if (isEnabled()) {
-                            Context context = (Context) param.args[0];
-                            Intent gvIntent = (Intent) param.args[1];
-
-                            if (gvIntent == null || gvIntent.getExtras() == null) {
-                                Log.w(TAG, "Null intent when hooking incoming GV message");
-                            } else if (gvIntent.getExtras().getString("sender_address") == null) {
-                                Log.d(TAG, "sender_address == null, so this must be a dummy intent, so we'll ignore it");
-                            } else {
-                                // Send the incoming message to be processed
-                                Intent intent = new Intent()
-                                        .setAction(MessageEventReceiver.INCOMING_VOICE)
-                                        .putExtras(gvIntent.getExtras());
-                                context.sendOrderedBroadcast(intent, null);
-                            }
-                        } else {
-                            Log.d(TAG, "Module is disabled, so ignoring the incoming message");
-                        }
-                    }
-                });
-    }
-
-    @Override
-    public void initZygote(StartupParam startupParam) {
-        // Hooks android.* packages
-
-        // Enable SMS on tablets
-        XResources.setSystemWideReplacement("android", "bool", "config_sms_capable", true);
-
-        hookSmsManager();
-    }
-
-    private void hookAppOps(LoadPackageParam lpparam) {
-        Log.d(TAG, "Hooking App Ops");
-
-        XposedBridge.hookAllConstructors(findClass("com.android.server.AppOpsService.Op", lpparam.classLoader),
-                new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                        if(XVOICE_PLUS_PACKAGE.equals(param.args[1]) &&
-                                (Integer) param.args[2] == SmsUtils.OP_WRITE_SMS) {
-                            Log.d(TAG, "App Ops hook: Setting OP_WRITE_SMS to MODE_ALLOWED");
-                            setIntField(param.thisObject, "mode", AppOpsManager.MODE_ALLOWED);
-                        }
-                    }
-                });
     }
 
     /**
@@ -192,6 +160,22 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
                 });
     }
 
+    private void hookAppOps(LoadPackageParam lpparam) {
+        Log.d(TAG, "Hooking App Ops");
+
+        XposedBridge.hookAllConstructors(findClass("com.android.server.AppOpsService.Op", lpparam.classLoader),
+                new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        if(XVOICE_PLUS_PACKAGE.equals(param.args[1]) &&
+                                (Integer) param.args[2] == SmsUtils.OP_WRITE_SMS) {
+                            Log.d(TAG, "App Ops hook: Setting OP_WRITE_SMS to MODE_ALLOWED");
+                            setIntField(param.thisObject, "mode", AppOpsManager.MODE_ALLOWED);
+                        }
+                    }
+                });
+    }
+
     /**
      * Hooks com.android.server.am.ActivityManagerService.broadcastIntentLocked()
      *
@@ -230,21 +214,37 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     }
 
     /**
-     * Hooks {@link SmsManager} to intercept outgoing messages.
+     * Hooks incoming Google Voice messages.
+     * @param lpparam
      */
-    private void hookSmsManager() {
-        Log.d(TAG, "Attempting to hook SmsManager");
+    private void hookGoogleVoice(LoadPackageParam lpparam) {
+        Log.d(TAG, "Hooking Google Voice push notifications");
 
-        try {
-            findAndHookMethod(SmsManager.class, "sendTextMessage", String.class, String.class,
-                    String.class, PendingIntent.class, PendingIntent.class, new XSendSmsMethodHook());
-            findAndHookMethod(SmsManager.class, "sendMultipartTextMessage", String.class, String.class,
-                    ArrayList.class, ArrayList.class, ArrayList.class, new XSendSmsMethodHook());
-            Log.d(TAG, "Hooked SmsManager methods successfully");
-        } catch (ClassNotFoundError e) {
-            Log.e(TAG, "Class android.telephony.SmsManager not found", e);
-        } catch (NoSuchMethodError e) {
-            Log.e(TAG, "SmsManager methods not found", e);
-        }
+        findAndHookMethod(GOOGLE_VOICE_PACKAGE + ".PushNotificationReceiver", lpparam.classLoader,
+                "onReceive", Context.class, Intent.class, new XC_MethodHook() {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        Log.d(TAG, "Received incoming Google Voice notification");
+
+                        if (isEnabled()) {
+                            Context context = (Context) param.args[0];
+                            Intent gvIntent = (Intent) param.args[1];
+
+                            if (gvIntent == null || gvIntent.getExtras() == null) {
+                                Log.w(TAG, "Null intent when hooking incoming GV message");
+                            } else if (gvIntent.getExtras().getString("sender_address") == null) {
+                                Log.d(TAG, "sender_address == null, so this must be a dummy intent, so we'll ignore it");
+                            } else {
+                                // Send the incoming message to be processed
+                                Intent intent = new Intent()
+                                        .setAction(MessageEventReceiver.INCOMING_VOICE)
+                                        .putExtras(gvIntent.getExtras());
+                                context.sendOrderedBroadcast(intent, null);
+                            }
+                        } else {
+                            Log.d(TAG, "Module is disabled, so ignoring the incoming message");
+                        }
+                    }
+                });
     }
 }
