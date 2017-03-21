@@ -1,5 +1,23 @@
 apply plugin: 'com.android.application'
 
+/**
+ * versionCode is in the form xxyyzz, where xx is versionMajor, yy is versionMinor, and zz is
+ * versionRevision.
+ */
+ext {
+    int versionMajor = 3
+    int versionMinor = 0
+    int versionRevision = 1
+
+    buildVersionCode = {
+        (versionMajor * 10000) + (versionMinor * 100) + versionRevision;
+    }
+
+    buildVersionName = {
+        versionMajor + "." + versionMinor + "." + versionRevision;
+    }
+}
+
 android {
     compileSdkVersion 23
     buildToolsVersion '23.0.3'
@@ -8,8 +26,8 @@ android {
         applicationId "io.behindthemath.xvoiceplus"
         minSdkVersion 21
         targetSdkVersion 22
-        versionCode 1
-        versionName "0.0.1"
+        versionCode buildVersionCode()
+        versionName buildVersionName()
 
     }
 
