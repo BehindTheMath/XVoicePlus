@@ -45,7 +45,7 @@ public class XVoicePlusService extends IntentService {
     private GoogleVoiceManager mGVManager = new GoogleVoiceManager(this);
 
     public XVoicePlusService() {
-        super("XVoicePlusService");
+        super(TAG);
     }
 
     private SharedPreferences getAppSettings() {
