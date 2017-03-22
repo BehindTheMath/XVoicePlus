@@ -17,7 +17,7 @@ import io.behindthemath.xvoiceplus.RegisteredAccountsParser;
 import io.behindthemath.xvoiceplus.XVoicePlus;
 import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 
-import static io.behindthemath.xvoiceplus.XVoicePlus.NEW_GOOGLE_VOICE_PACKAGE;
+import static io.behindthemath.xvoiceplus.XVoicePlus.LEGACY_GOOGLE_VOICE_PACKAGE;
 import static io.behindthemath.xvoiceplus.XVoicePlus.XVOICE_PLUS_PACKAGE;
 import static io.behindthemath.xvoiceplus.XVoicePlus.XVOICE_PLUS_PREFERENCES_FILE_NAME;
 
@@ -100,8 +100,12 @@ public class GCMListenerServiceHook extends XC_MethodHook {
                 return false;
             }
 
-            final SharedPreferences gvSharedPrefs = new XSharedPreferences(NEW_GOOGLE_VOICE_PACKAGE);
+            final SharedPreferences gvSharedPrefs = new XSharedPreferences(LEGACY_GOOGLE_VOICE_PACKAGE);
             final String registeredAccounts = gvSharedPrefs.getString("registered_accounts", null);
+            if (registeredAccounts == null) {
+                Log.e(TAG, "Error accessing registered_accounts from GV SharedPreferences");
+                return false;
+            }
             final byte[] registeredAccountsBytes = Base64.decode(registeredAccounts, Base64.DEFAULT);
 
             if (!RegisteredAccountsParser.isMatch(accountName, userHash, registeredAccountsBytes)) {
