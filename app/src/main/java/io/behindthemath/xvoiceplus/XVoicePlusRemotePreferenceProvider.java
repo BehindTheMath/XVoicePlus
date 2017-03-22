@@ -23,25 +23,21 @@ public class XVoicePlusRemotePreferenceProvider extends RemotePreferenceProvider
 
     @Override
     protected boolean checkAccess(String prefName, String prefKey, boolean write) {
-        return isCallingPackageGV() && isPermittedAccessibleSetting(prefKey);
+        // Allow read access to the "settings_enabled" preference for all packages
+        if ("settings_enabled".equals(prefKey) && !write) return true;
+
+        // Allow read access to the "account" preference for GV
+        if ("account".equals(prefKey) && !write && isCallingPackageGV()) return true;
+
+        // Allow read/write access to the "user_hash" preference for GV
+        if ("user_hash".equals(prefKey) && isCallingPackageGV()) return true;
+
+        return false;
     }
 
     private boolean isCallingPackageGV() {
         final String callingPackage = getCallingPackage();
         return LEGACY_GOOGLE_VOICE_PACKAGE.equals(callingPackage) ||
                 NEW_GOOGLE_VOICE_PACKAGE.equals(callingPackage);
-    }
-
-    private boolean isPermittedAccessibleSetting(String prefKey) {
-        return isPermittedReadOnlySetting(prefKey) || isPermittedReadWriteSetting(prefKey);
-    }
-
-    private boolean isPermittedReadOnlySetting(String prefKey) {
-        List permittedReadableSettings = Arrays.asList("account", "settings_enabled");
-        return permittedReadableSettings.contains(prefKey);
-    }
-
-    private boolean isPermittedReadWriteSetting(String prefKey) {
-        return "user_hash".equals(prefKey);
     }
 }
