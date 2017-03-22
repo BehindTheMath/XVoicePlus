@@ -7,7 +7,7 @@ apply plugin: 'com.android.application'
 ext {
     int versionMajor = 3
     int versionMinor = 1
-    int versionRevision = 0
+    int versionRevision = 1
 
     buildVersionCode = {
         (versionMajor * 10000) + (versionMinor * 100) + versionRevision;
