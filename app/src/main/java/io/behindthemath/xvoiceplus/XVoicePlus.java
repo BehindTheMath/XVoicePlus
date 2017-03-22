@@ -44,7 +44,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
     public static final String APP_NAME = TAG;
     public static final String XVOICE_PLUS_PREFERENCES_FILE_NAME = XVOICE_PLUS_PACKAGE + "_preferences";
 
-    private static final String LEGACY_GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
+    public static final String LEGACY_GOOGLE_VOICE_PACKAGE = "com.google.android.apps.googlevoice";
     public static final String NEW_GOOGLE_VOICE_PACKAGE = "com.google.android.apps.voice";
     private static final String NEW_GOOGLE_VOICE_GCM_PACKAGE = NEW_GOOGLE_VOICE_PACKAGE + ".backends.gcm";
 

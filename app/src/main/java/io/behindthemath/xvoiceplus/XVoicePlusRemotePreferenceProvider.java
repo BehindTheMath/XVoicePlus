@@ -5,6 +5,7 @@ import com.crossbowffs.remotepreferences.RemotePreferenceProvider;
 import java.util.Arrays;
 import java.util.List;
 
+import static io.behindthemath.xvoiceplus.XVoicePlus.LEGACY_GOOGLE_VOICE_PACKAGE;
 import static io.behindthemath.xvoiceplus.XVoicePlus.NEW_GOOGLE_VOICE_PACKAGE;
 import static io.behindthemath.xvoiceplus.XVoicePlus.XVOICE_PLUS_PACKAGE;
 import static io.behindthemath.xvoiceplus.XVoicePlus.XVOICE_PLUS_PREFERENCES_FILE_NAME;
@@ -26,7 +27,9 @@ public class XVoicePlusRemotePreferenceProvider extends RemotePreferenceProvider
     }
 
     private boolean isCallingPackageGV() {
-        return NEW_GOOGLE_VOICE_PACKAGE.equals(getCallingPackage());
+        final String callingPackage = getCallingPackage();
+        return LEGACY_GOOGLE_VOICE_PACKAGE.equals(callingPackage) ||
+                NEW_GOOGLE_VOICE_PACKAGE.equals(callingPackage);
     }
 
     private boolean isPermittedAccessibleSetting(String prefKey) {
