@@ -5,7 +5,7 @@ This module is a fork of [runnirr](https://github.com/runnirr)'s original [XVoic
 
 ## Installation
 * Install Google Voice from the [Play Store](https://play.google.com/store/apps/details?id=com.google.android.apps.googlevoice) if you don't have it already.
-* Install XVoice++ from the Xposed Installer app. (Or download the latest APK from the [releases page](/releases>) or the [Xposed Repo](http://repo.xposed.info/module/io.behindthemath.xvoiceplus) and side-load it).
+* Install XVoice++ from the Xposed Installer app. (Or download the latest APK from the [releases page](/releases/latest) or the [Xposed Repo](http://repo.xposed.info/module/io.behindthemath.xvoiceplus) and side-load it).
 * Activate XVoice++ in Xposed.
 * Open the XVoice++ app and enabled it, and select the Google Voice account you would like to use.
 * Disable text notifications in the Google Voice app settings to avoid double notifications.
