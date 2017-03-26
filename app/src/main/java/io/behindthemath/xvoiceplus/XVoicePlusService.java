@@ -64,14 +64,11 @@ public class XVoicePlusService extends IntentService {
      *  Parse out the intent extras from io.behindthemath.xvoiceplus.OUTGOING_SMS and send it off via Google Voice
      */
     private void handleOutgoingSms(Intent intent) {
-        boolean multipart = intent.getBooleanExtra("multipart", false);
         String destAddr = intent.getStringExtra("destAddr");
-        String scAddr = intent.getStringExtra("scAddr");
         ArrayList<String> parts = intent.getStringArrayListExtra("parts");
         ArrayList<PendingIntent> sentIntents = intent.getParcelableArrayListExtra("sentIntents");
-        ArrayList<PendingIntent> deliveryIntents = intent.getParcelableArrayListExtra("deliveryIntents");
 
-        onSendMultipartText(destAddr, scAddr, parts, sentIntents, deliveryIntents, multipart);
+        onSendMultipartText(destAddr, parts, sentIntents);
     }
 
     @Override
@@ -187,15 +184,10 @@ public class XVoicePlusService extends IntentService {
      * Send an outgoing SMS via Google Voice
      *
      * @param destAddr
-     * @param scAddr
      * @param texts
      * @param sentIntents
-     * @param deliveryIntents
-     * @param multipart
      */
-    private void onSendMultipartText(String destAddr, String scAddr, List<String> texts,
-            final List<PendingIntent> sentIntents, final List<PendingIntent> deliveryIntents,
-            boolean multipart) {
+    private void onSendMultipartText(String destAddr, List<String> texts, final List<PendingIntent> sentIntents) {
         // combine the multipart text into one string
         StringBuilder textBuilder = new StringBuilder();
         for (String text: texts) {
