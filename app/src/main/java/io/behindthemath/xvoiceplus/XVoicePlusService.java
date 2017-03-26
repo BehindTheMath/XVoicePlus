@@ -404,8 +404,8 @@ public class XVoicePlusService extends IntentService {
     }
 
     public boolean syncEnabled() {
-        return (getSettings().getBoolean("settings_sync_on_receive", false) |
-                getSettings().getBoolean("settings_sync_on_send", false) |
+        return (getSettings().getBoolean("settings_sync_on_receive", false) ||
+                getSettings().getBoolean("settings_sync_on_send", false) ||
                 Long.valueOf(getSettings().getString("settings_polling_frequency", "-1")) != -1L);
     }
 }
