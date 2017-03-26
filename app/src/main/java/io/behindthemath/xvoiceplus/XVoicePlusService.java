@@ -274,15 +274,19 @@ public class XVoicePlusService extends IntentService {
 
     void handleIncomingMessage(Intent intent) {
         if(MessageEventReceiver.INCOMING_VOICE.equals(intent.getAction())) {
+            Bundle extras = intent.getExtras();
             Message message = new Message();
-            message.conversationId = intent.getExtras().getString("conversation_id");
-            message.id = intent.getExtras().getString("call_id");
+
+            message.conversationId = extras.getString("conversation_id");
+            message.id = extras.getString("call_id");
             message.type = VOICE_INCOMING_SMS;
-            message.message = intent.getExtras().getString("call_content");
-            message.phoneNumber = intent.getExtras().getString("sender_address");
-            message.date = Long.valueOf(intent.getExtras().getString("call_time"));
+            message.message = extras.getString("call_content");
+            message.phoneNumber = extras.getString("sender_address");
+            message.date = Long.valueOf(extras.getString("call_time"));
+
             getAppSettings().edit().putLong("timestamp", message.date).apply();
             synthesizeMessage(message);
+
             try {
                 mGVManager.markGvMessageRead(message.id, 1);
             } catch (Exception e) {
