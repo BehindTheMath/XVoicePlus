@@ -38,7 +38,7 @@ public class GoogleVoiceManager {
     }
 
     private SharedPreferences getSettings() {
-        return mContext.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
+        return mContext.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_PRIVATE);
     }
 
     private String getAccount() {

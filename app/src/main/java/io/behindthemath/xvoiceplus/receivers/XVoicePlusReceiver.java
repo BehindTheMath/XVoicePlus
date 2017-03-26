@@ -8,7 +8,7 @@ import android.support.v4.content.WakefulBroadcastReceiver;
 public abstract class XVoicePlusReceiver extends WakefulBroadcastReceiver {
 
     protected static SharedPreferences getPreferences(Context context) {
-        return context.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
+        return context.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_PRIVATE);
     }
 
     protected static boolean isEnabled (Context context) {

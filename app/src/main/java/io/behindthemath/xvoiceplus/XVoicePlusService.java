@@ -57,7 +57,7 @@ public class XVoicePlusService extends IntentService {
     }
 
     private SharedPreferences getSettings() {
-        return getSharedPreferences(XVOICE_PLUS_PREFERENCES_FILE_NAME, Context.MODE_WORLD_READABLE);
+        return getSharedPreferences(XVOICE_PLUS_PREFERENCES_FILE_NAME, MODE_PRIVATE);
     }
 
     /**

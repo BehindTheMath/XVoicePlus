@@ -38,6 +38,6 @@ public class GvHeadersCallback implements HeadersCallback {
     }
 
     private SharedPreferences getSettings() {
-        return mContext.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_WORLD_READABLE);
+        return mContext.getSharedPreferences("io.behindthemath.xvoiceplus_preferences", Context.MODE_PRIVATE);
     }
 }
