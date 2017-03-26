@@ -198,9 +198,7 @@ public class XVoicePlusService extends IntentService {
         try {
             // send it off, and note that we recently sent this message
             // for round trip tracking
-            mGVManager.sendGvMessage(destAddr, text);
-            if (syncEnabled()) addMessageToRecentList(text);
-            success(sentIntents);
+            sendGvMessage(destAddr, text, sentIntents);
             return;
         }
         catch (Exception e) {
@@ -210,9 +208,7 @@ public class XVoicePlusService extends IntentService {
         try {
             // on failure, fetch info and try again
             mGVManager.refreshAuth();
-            mGVManager.sendGvMessage(destAddr, text);
-            if (syncEnabled()) addMessageToRecentList(text);
-            success(sentIntents);
+            sendGvMessage(destAddr, text, sentIntents);
         }
         catch (Exception e) {
             Log.d(TAG, "Send failure", e);
@@ -220,6 +216,11 @@ public class XVoicePlusService extends IntentService {
         }
     }
 
+    private void sendGvMessage(String destAddr, String text, List<PendingIntent> sentIntents) throws Exception {
+        mGVManager.sendGvMessage(destAddr, text);
+        if (syncEnabled()) addMessageToRecentList(text);
+        success(sentIntents);
+    }
     boolean messageExists(Message m, Uri uri) {
         Cursor c = getContentResolver().query(uri, null, "date = ? AND body = ?",
                 new String[] { String.valueOf(m.date), m.message }, null);
