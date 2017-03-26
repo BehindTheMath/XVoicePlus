@@ -19,7 +19,7 @@ public class SmsUtils {
     public static final String SERVICE_CENTER = "5555555555";   // Fake so we know its a fake message
 
 
-    public static void createFakeSms(Context context, String sender, String body, long date) throws IOException {
+    public static byte[] createFakeSms(Context context, String sender, String body, long date) throws IOException {
         byte[] pdu = null;
         byte[] scBytes = PhoneNumberUtils.networkPortionToCalledPartyBCD(SERVICE_CENTER);
         byte[] senderBytes = PhoneNumberUtils.networkPortionToCalledPartyBCD(sender);
@@ -74,7 +74,7 @@ public class SmsUtils {
             bo.close();
         }
 
-        broadcastMessage(context, pdu);
+        return pdu;
     }
 
     /**
@@ -88,7 +88,7 @@ public class SmsUtils {
      * @param context
      * @param pdu
      */
-    private static void broadcastMessage(Context context, byte[] pdu) {
+    static void broadcastMessage(Context context, byte[] pdu) {
         Log.d(TAG, "Creating fake SMS. Broadcasting...");
         //Log.d(TAG, "Broadcasting pdu " + bytesToHex(pdu));
 

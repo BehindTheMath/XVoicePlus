@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import android.util.Log;
 
 import java.io.IOException;
@@ -263,7 +264,8 @@ public class XVoicePlusService extends IntentService {
     void synthesizeMessage(Message message) {
         if (!messageExists(message, URI_RECEIVED)) {
             try {
-                SmsUtils.createFakeSms(this, message.phoneNumber, messageWithPrefixSuffix(message.message), message.date);
+                byte[] pdu = SmsUtils.createFakeSms(this, message.phoneNumber, messageWithPrefixSuffix(message.message), message.date);
+                SmsUtils.broadcastMessage(this, pdu);
             } catch (IOException e) {
                 Log.e(TAG, "IOException when creating fake SMS, ignoring.", e);
             }
