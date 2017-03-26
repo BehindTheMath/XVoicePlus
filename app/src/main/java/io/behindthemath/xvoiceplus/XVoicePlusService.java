@@ -99,10 +99,10 @@ public class XVoicePlusService extends IntentService {
             if (getSettings().getBoolean("settings_sync_on_receive", false)) {
                 Log.d(TAG, "Sync on receive enabled");
                 startSync();
-                clearRecentList();
             } else {
                 handleIncomingMessage(intent);
             }
+            clearRecentList();
             MessageEventReceiver.completeWakefulIntent(intent);
 
         // Boot
@@ -282,7 +282,6 @@ public class XVoicePlusService extends IntentService {
             message.phoneNumber = intent.getExtras().getString("sender_address");
             message.date = Long.valueOf(intent.getExtras().getString("call_time"));
             getAppSettings().edit().putLong("timestamp", message.date).apply();
-            clearRecentList();
             synthesizeMessage(message);
             try {
                 mGVManager.markGvMessageRead(message.id, 1);
