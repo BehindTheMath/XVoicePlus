@@ -123,14 +123,13 @@ public class XVoicePlusService extends IntentService {
      * @param sentIntents A list of {@link PendingIntent}s to broadcast when the message is sent.
      */
     public static void fail(List<PendingIntent> sentIntents) {
-        if (sentIntents == null)
-            return;
+        if (sentIntents == null) return;
+
         for (PendingIntent sentIntent: sentIntents) {
-            if (sentIntent != null){
+            if (sentIntent != null) {
                 try {
                     sentIntent.send();
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Log.w(TAG, "Error marking failed intent", e);
                 }
             }
@@ -142,14 +141,13 @@ public class XVoicePlusService extends IntentService {
      *
      * @param sentIntents
      */    public void success(List<PendingIntent> sentIntents) {
-        if (sentIntents == null)
-            return;
+        if (sentIntents == null) return;
+
         for (PendingIntent si: sentIntents) {
             if (si != null) {
                 try {
                     si.send(Activity.RESULT_OK);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     Log.w(TAG, "Error marking success intent", e);
                 }
             }
@@ -200,8 +198,7 @@ public class XVoicePlusService extends IntentService {
             // for round trip tracking
             sendGvMessage(destAddr, text, sentIntents);
             return;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.d(TAG, "Send error", e);
         }
 
@@ -209,8 +206,7 @@ public class XVoicePlusService extends IntentService {
             // on failure, fetch info and try again
             mGVManager.refreshAuth();
             sendGvMessage(destAddr, text, sentIntents);
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             Log.d(TAG, "Send failure", e);
             fail(sentIntents);
         }
@@ -303,8 +299,8 @@ public class XVoicePlusService extends IntentService {
                 settings.getString("settings_incoming_suffix", ""));
     }
     
-    private void markReadIfNeeded(Message message){
-        if (message.read == 0){
+    private void markReadIfNeeded(Message message) {
+        if (message.read == 0) {
             Uri uri;
             if (message.type == VOICE_INCOMING_SMS) {
                 uri = URI_RECEIVED;
@@ -317,7 +313,7 @@ public class XVoicePlusService extends IntentService {
             Cursor c = getContentResolver().query(uri, null, "date = ? AND body = ?",
                     new String[] { String.valueOf(message.date), message.message }, null);
             try {
-                if(c != null && c.moveToFirst()){
+                if(c != null && c.moveToFirst()) {
                     mGVManager.markGvMessageRead(message.id, 1);
                 }
             } catch (Exception e) {

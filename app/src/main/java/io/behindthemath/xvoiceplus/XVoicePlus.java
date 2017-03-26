@@ -123,7 +123,7 @@ public class XVoicePlus implements IXposedHookLoadPackage, IXposedHookZygoteInit
      * PackageManagerService to grant the permission.
      * @param lpparam
      */
-    private void hookXVoicePlusPermissions(LoadPackageParam lpparam){
+    private void hookXVoicePlusPermissions(LoadPackageParam lpparam) {
         Log.d(TAG, "Hooking " + APP_NAME + " permissions");
 
         final Class<?> packageManagerServiceClass = findClass("com.android.server.pm.PackageManagerService", lpparam.classLoader);
