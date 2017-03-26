@@ -87,23 +87,23 @@ public class XVoicePlusService extends IntentService {
             handleOutgoingSms(intent);
             if (getSettings().getBoolean("settings_sync_on_send", false)) {
                 Log.d(TAG, "Sync on send enabled.");
-                startRefresh();
+                startSync();
             }
             MessageEventReceiver.completeWakefulIntent(intent);
 
         // Polling
         } else if (UserPollReceiver.USER_POLL.equals(intent.getAction())) {
-            startRefresh();
+            startSync();
             UserPollReceiver.completeWakefulIntent(intent);
 
         // Incoming message
         } else if (MessageEventReceiver.INCOMING_VOICE.equals(intent.getAction())) {
             if (getSettings().getBoolean("settings_sync_on_receive", false)) {
                 Log.d(TAG, "Sync on receive enabled");
-                startRefresh();
-                clearRecent();
+                startSync();
+                clearRecentList();
             } else {
-                synthesizeMessage(intent);
+                handleIncomingMessage(intent);
             }
             MessageEventReceiver.completeWakefulIntent(intent);
 
@@ -111,7 +111,7 @@ public class XVoicePlusService extends IntentService {
         } else if (BootCompletedReceiver.BOOT_COMPLETED.equals(intent.getAction())) {
             if (getSettings().getBoolean("settings_sync_on_boot", false)) {
                 Log.d(TAG, "Sync on boot enabled.");
-                startRefresh();
+                startSync();
             }
             BootCompletedReceiver.completeWakefulIntent(intent);
 
@@ -162,14 +162,14 @@ public class XVoicePlusService extends IntentService {
     /**
      * Mark an outgoing text as recently sent, so if it comes in via round trip, we ignore it.
      */
-    private void addRecent(String text) {
+    private void addMessageToRecentList(String text) {
             SharedPreferences savedRecent = getRecentMessages();
             Set<String> recentMessage = savedRecent.getStringSet("recent", new HashSet<String>());
             recentMessage.add(text);
             savedRecent.edit().putStringSet("recent", recentMessage).apply();
     }
 
-    private boolean removeRecent(String text) {
+    private boolean removeMessageFromRecentList(String text) {
         SharedPreferences savedRecent = getRecentMessages();
         Set<String> recentMessage = savedRecent.getStringSet("recent", new HashSet<String>());
         if (recentMessage.remove(text)) {
@@ -179,7 +179,7 @@ public class XVoicePlusService extends IntentService {
         return false;
     }
 
-    private void clearRecent() {
+    private void clearRecentList() {
         getRecentMessages().edit().putStringSet("recent", new HashSet<String>()).apply();
     }
 
@@ -207,7 +207,7 @@ public class XVoicePlusService extends IntentService {
             // send it off, and note that we recently sent this message
             // for round trip tracking
             mGVManager.sendGvMessage(destAddr, text);
-            if (syncEnabled()) addRecent(text);
+            if (syncEnabled()) addMessageToRecentList(text);
             success(sentIntents);
             return;
         }
@@ -219,7 +219,7 @@ public class XVoicePlusService extends IntentService {
             // on failure, fetch info and try again
             mGVManager.refreshAuth();
             mGVManager.sendGvMessage(destAddr, text);
-            if (syncEnabled()) addRecent(text);
+            if (syncEnabled()) addMessageToRecentList(text);
             success(sentIntents);
         }
         catch (Exception e) {
@@ -281,7 +281,7 @@ public class XVoicePlusService extends IntentService {
         }
     }
 
-    void synthesizeMessage(Intent intent) {
+    void handleIncomingMessage(Intent intent) {
         if(MessageEventReceiver.INCOMING_VOICE.equals(intent.getAction())) {
             Message message = new Message();
             message.conversationId = intent.getExtras().getString("conversation_id");
@@ -291,7 +291,7 @@ public class XVoicePlusService extends IntentService {
             message.phoneNumber = intent.getExtras().getString("sender_address");
             message.date = Long.valueOf(intent.getExtras().getString("call_time"));
             getAppSettings().edit().putLong("timestamp", message.date).apply();
-            clearRecent();
+            clearRecentList();
             synthesizeMessage(message);
             try {
                 mGVManager.markGvMessageRead(message.id, 1);
@@ -337,7 +337,7 @@ public class XVoicePlusService extends IntentService {
         }
     }
 
-    private void updateMessages() throws Exception {
+    private void syncMessages() throws Exception {
         Log.d(TAG, "Updating messages");
         List<Conversation> conversations = mGVManager.retrieveMessages();
 
@@ -376,7 +376,7 @@ public class XVoicePlusService extends IntentService {
 
             // Sync up outgoing messages
             if (message.type == VOICE_OUTGOING_SMS) {
-                if (!removeRecent(message.message)) {
+                if (!removeMessageFromRecentList(message.message)) {
                     Log.d(TAG, "Outgoing message not found in recents, inserting into SMS database.");
                     insertMessage(message);
                 }
@@ -394,10 +394,10 @@ public class XVoicePlusService extends IntentService {
         getAppSettings().edit().putLong("timestamp", max).apply();
     }
 
-    void startRefresh() {
+    void startSync() {
         Log.d(TAG, "Starting refresh");
         try {
-            updateMessages();
+            syncMessages();
         } catch (Exception e) {
             Log.e(TAG, "Error refreshing messages", e);
         }
