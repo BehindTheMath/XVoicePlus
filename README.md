@@ -22,19 +22,21 @@ Once XVoicePlusService receives the intent, it sends the message using HTTP call
 ##### Legacy Google Voice (v0.4.7.10 and lower)
 Receiving message is done by hooking into the Google Voice app's PushNotificationReceiver. This means that we know of the message as soon as the Google Voice app does. Conveniently, this receiver works even when notifications in Google Voice are turned off, so you don't need to briefly see the Google Voice notification, have it disappear, and then see the SMS notification.
 
-Once we have an incoming Google Voice message, we broadcast an INCOMING_VOICE intent to the XVoicePlusService.The service then handles the message and broadcasts a system wide RECEIVED_SMS intent that is used by all SMS applications.
+Once we have an incoming Google Voice message, we broadcast an INCOMING_VOICE intent to the XVoicePlusService. The service then handles the message and broadcasts a system wide RECEIVED_SMS intent that is used by all SMS applications.
 
 ##### Google Voice v5.0+
 Starting with v5.0, the Google Voice app was completely rewritten, and now uses Google Cloud Messaging for push notifications. The module hooks the GCMListenerService to catch the message as it comes in, and broadcasts an INCOMING_VOICE intent to the XVoicePlusService.
 
 ## Known Issues
-* Emojis may cause issues.
+* Emojis and accented characters may cause issues.
 * There is no support for MMS.
 * There is no way to send SMS via your carrier. Any app that uses SmsManager to send texts will have its messages redirected via Google Voice.
 * Occasionally, messages may show up with the wrong timestamp, or there may be duplicate messages.
 * When I had the default SMS app is set to the AOSP Messaging app (com.android.mms, not to be confused with Google Messenger), the module would not work for outgoing messages. On one device, incoming messages did not work either. I was using version 5.1.1-720affab4e. I'm still not sure what causes it.
 * On one of my test devices, I sometimes experienced a crash of the system process on boot. This did not seem to affect the functionality of the module.
 
+## To do list
+* Blacklist / Whitelist
 
 ## Support
 [XDA Thread](https://forum.xda-developers.com/xposed/modules/app-xvoice-google-voice-sms-apps-t3556861)
