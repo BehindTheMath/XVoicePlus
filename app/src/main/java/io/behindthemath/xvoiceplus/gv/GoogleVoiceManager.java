@@ -142,8 +142,11 @@ public class GoogleVoiceManager {
                 .asJsonObject()
                 .get();
 
-        if (!json.get("ok").getAsBoolean())
+        if (!json.get("ok").getAsBoolean()) {
             throw new Exception(json.toString());
+        } else {
+            Log.d(TAG, "Message sent with Google Voice successfully");
+        }
     }
 
     /**
