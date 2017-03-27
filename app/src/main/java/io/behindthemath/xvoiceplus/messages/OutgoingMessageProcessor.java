@@ -70,7 +70,8 @@ public class OutgoingMessageProcessor {
         for (PendingIntent sentIntent: sentIntents) {
             if (sentIntent != null){
                 try {
-                    sentIntent.send();
+                    // Based on com.android.internal.telephony.SMSDispatcher$SmsTracker#handleSendComplete()
+                    sentIntent.send(RESULT_ERROR_GENERIC_FAILURE);
                 } catch (Exception e) {
                     Log.e(TAG, "Error marking failed intent", e);
                 }
