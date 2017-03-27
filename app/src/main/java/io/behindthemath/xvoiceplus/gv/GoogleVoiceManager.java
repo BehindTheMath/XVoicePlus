@@ -186,8 +186,7 @@ public class GoogleVoiceManager {
     }
     
     public static void invalidateToken(final Context context, final String account) {
-        if (account == null)
-            return;
+        if (account == null) return;
 
         new Thread() {
             @Override

@@ -25,9 +25,9 @@ public class GvHeadersCallback implements HeadersCallback {
     public void onHeaders(HeadersResponse headersResponse) {
         if (headersResponse.code() == 401) {
             Log.e(TAG, "Refresh failed:\n" + headersResponse.message());
-            AccountManager am = AccountManager.get(mContext);
-            if (am != null) {
-                am.invalidateAuthToken("com.google", mAuthToken);
+            AccountManager accountManager = AccountManager.get(mContext);
+            if (accountManager != null) {
+                accountManager.invalidateAuthToken("com.google", mAuthToken);
             }
             removeRnrse();
         }
