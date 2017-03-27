@@ -8,6 +8,7 @@ import android.util.Log;
 
 import io.behindthemath.xvoiceplus.XVoicePlus;
 import io.behindthemath.xvoiceplus.XVoicePlusService;
+import io.behindthemath.xvoiceplus.messages.OutgoingMessageProcessor;
 import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 
 import java.io.IOException;
@@ -61,7 +62,7 @@ public class XSendSmsMethodHook extends XC_MethodHook {
         } else {
             Log.i(TAG, "Send text failed.");
             // If it fails, fail the message
-            XVoicePlusService.fail(sentIntents);
+            OutgoingMessageProcessor.fail(sentIntents);
         }
     }
 

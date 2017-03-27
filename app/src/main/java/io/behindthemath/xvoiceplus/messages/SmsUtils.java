@@ -1,8 +1,8 @@
-package io.behindthemath.xvoiceplus;
+package io.behindthemath.xvoiceplus.messages;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Build;
+import android.database.Cursor;
+import android.net.Uri;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 
@@ -11,15 +11,27 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Calendar;
 
+import io.behindthemath.xvoiceplus.gv.GvResponse;
+
 public class SmsUtils {
     private static final String TAG = SmsUtils.class.getSimpleName();
 
-    public static final String FORMAT_3GPP = "3gpp";
+    static final String FORMAT_3GPP = "3gpp";
     public static final int OP_WRITE_SMS = 15;
-    public static final String SERVICE_CENTER = "5555555555";   // Fake so we know its a fake message
+    private static final String SERVICE_CENTER = "5555555555";   // Fake so we know its a fake message
+
+    static final int VOICE_INCOMING_SMS = 10;
+    static final int VOICE_OUTGOING_SMS = 11;
+
+    static final int PROVIDER_INCOMING_SMS = 1;
+    static final int PROVIDER_OUTGOING_SMS = 2;
+
+    static final Uri URI_SENT = Uri.parse("content://sms/sent");
+    static final Uri URI_RECEIVED = Uri.parse("content://sms/inbox");
 
 
-    public static byte[] createFakeSms(Context context, String sender, String body, long date) throws IOException {
+
+    static byte[] createFakeSms(String sender, String body, long date) throws IOException {
         byte[] pdu = null;
         byte[] scBytes = PhoneNumberUtils.networkPortionToCalledPartyBCD(SERVICE_CENTER);
         byte[] senderBytes = PhoneNumberUtils.networkPortionToCalledPartyBCD(sender);
@@ -77,38 +89,6 @@ public class SmsUtils {
         return pdu;
     }
 
-    /**
-     * Send the systemwide SMS_RECEIVED_ACTION broadcast intent with the new incoming message.
-     *
-     * Starting with KK, there are 2 broadcast intents sent for each message. The SMS_DELIVER_ACTION
-     * intent is sent only to the default messaging app, and only this app can write to the SMS
-     * Provider. The SMS_RECEIVED_ACTION broadcast intent is sent systemwide, and can be received
-     * by any app, to be notified that there is an incoming SMS.
-     *
-     * @param context
-     * @param pdu
-     */
-    static void broadcastMessage(Context context, byte[] pdu) {
-        Log.d(TAG, "Creating fake SMS. Broadcasting...");
-        //Log.d(TAG, "Broadcasting pdu " + bytesToHex(pdu));
-
-        String deliver_action = "android.provider.Telephony.SMS_DELIVER";
-        Intent intent = new Intent()
-            .setAction(deliver_action)
-            .setFlags(0)
-            .putExtra("pdus", new Object[] { pdu })
-            .putExtra("format", FORMAT_3GPP);
-        context.sendOrderedBroadcast(intent, "android.permission.RECEIVE_SMS");
-
-        String received_action = "android.provider.Telephony.SMS_RECEIVED";
-        intent = new Intent()
-            .setAction(received_action)
-            .setFlags(0)
-            .putExtra("pdus", new Object[] { pdu })
-            .putExtra("format", FORMAT_3GPP);
-        context.sendOrderedBroadcast(intent, "android.permission.RECEIVE_SMS");
-    }
-
     private static byte reverseByte(byte b) {
         return (byte) ((b & 0xF0) >> 4 | (b & 0x0F) << 4);
     }
@@ -138,5 +118,18 @@ public class SmsUtils {
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
         return new String(hexChars);
+    }
+
+    static boolean messageExists(Context context, GvResponse.Message m, Uri uri) {
+        Cursor c = context.getContentResolver().query(uri, null, "date = ? AND body = ?",
+                new String[] { String.valueOf(m.date), m.message }, null);
+        if (c != null) {
+            try {
+                return c.moveToFirst();
+            } finally {
+                c.close();
+            }
+        }
+        return false;
     }
 }

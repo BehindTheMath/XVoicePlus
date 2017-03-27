@@ -27,6 +27,7 @@ import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage.LoadPackageParam;
 import io.behindthemath.xvoiceplus.hooks.GCMListenerServiceHook;
 import io.behindthemath.xvoiceplus.hooks.XSendSmsMethodHook;
+import io.behindthemath.xvoiceplus.messages.SmsUtils;
 import io.behindthemath.xvoiceplus.receivers.MessageEventReceiver;
 
 import static de.robv.android.xposed.XposedHelpers.ClassNotFoundError;

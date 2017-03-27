@@ -30,6 +30,9 @@ public class GoogleVoiceManager {
 
     public static final String ACCOUNT_CHANGED = "io.behindthemath.xvoiceplus.ACCOUNT_CHANGED";
 
+    public static final int MARK_MESSAGE_UNREAD = 0;
+    public static final int MARK_MESSAGE_READ = 1;
+
     private final Context mContext;
     private String mRnrse = null;
     
