@@ -1,7 +1,5 @@
 package io.behindthemath.xvoiceplus.messages;
 
-import android.content.Context;
-import android.database.Cursor;
 import android.net.Uri;
 import android.telephony.PhoneNumberUtils;
 import android.util.Log;
@@ -10,8 +8,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.Calendar;
-
-import io.behindthemath.xvoiceplus.gv.GvResponse;
 
 public class SmsUtils {
     private static final String TAG = SmsUtils.class.getSimpleName();
@@ -120,16 +116,4 @@ public class SmsUtils {
         return new String(hexChars);
     }
 
-    static boolean messageExists(Context context, GvResponse.Message m, Uri uri) {
-        Cursor c = context.getContentResolver().query(uri, null, "date = ? AND body = ?",
-                new String[] { String.valueOf(m.date), m.message }, null);
-        if (c != null) {
-            try {
-                return c.moveToFirst();
-            } finally {
-                c.close();
-            }
-        }
-        return false;
-    }
 }

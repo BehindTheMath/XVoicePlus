@@ -143,7 +143,7 @@ public class SyncProcessor {
             return;
         }
 
-        if (!SmsUtils.messageExists(context, message, uri)) {
+        if (!SharedPrefsManager.messageExists(context, message, uri)) {
             ContentValues values = new ContentValues();
             values.put("address", message.phoneNumber);
             values.put("body", message.message);

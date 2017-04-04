@@ -2,9 +2,13 @@ package io.behindthemath.xvoiceplus;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.net.Uri;
 
 import java.util.HashSet;
 import java.util.Set;
+
+import io.behindthemath.xvoiceplus.gv.GvResponse;
 
 import static io.behindthemath.xvoiceplus.XVoicePlus.XVOICE_PLUS_PREFERENCES_FILE_NAME;
 
@@ -59,5 +63,18 @@ public class SharedPrefsManager {
 
     void clearRecentList() {
         getRecentMessages().edit().putStringSet("recent", new HashSet<String>()).apply();
+    }
+
+    public static boolean messageExists(Context context, GvResponse.Message m, Uri uri) {
+        Cursor c = context.getContentResolver().query(uri, null, "date = ? AND body = ?",
+                new String[] { String.valueOf(m.date), m.message }, null);
+        if (c != null) {
+            try {
+                return c.moveToFirst();
+            } finally {
+                c.close();
+            }
+        }
+        return false;
     }
 }

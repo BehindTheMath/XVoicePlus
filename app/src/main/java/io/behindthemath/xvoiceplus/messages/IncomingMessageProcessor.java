@@ -49,7 +49,7 @@ public class IncomingMessageProcessor {
     }
 
     static void synthesizeMessage(Context context, SharedPrefsManager sharedPrefsManager, GvResponse.Message message) {
-        if (!SmsUtils.messageExists(context, message, URI_RECEIVED)) {
+        if (!SharedPrefsManager.messageExists(context, message, URI_RECEIVED)) {
             try {
                 byte[] pdu = SmsUtils.createFakeSms(message.phoneNumber, messageWithPrefixSuffix(sharedPrefsManager, message.message), message.date);
                 broadcastMessage(context, pdu);
