@@ -71,7 +71,13 @@ public class GoogleVoiceManager {
         return mRnrse;
     }
     
-    // Fetch the weirdo opaque token Google Voice needs...
+    /**
+     * Fetch the weirdo opaque token Google Voice needs...
+     *
+     * @return
+     *
+     * @throws Exception
+     */
     private String fetchRnrSe() throws Exception {
         final String authToken = getAuthToken();
         JsonObject userInfo = Ion.with(mContext).load("https://www.google.com/voice/request/user")
@@ -129,7 +135,14 @@ public class GoogleVoiceManager {
         return bundle.getString(AccountManager.KEY_AUTHTOKEN);
     }
     
-    // Hit the Google Voice API to send a text
+    /**
+     * Hit the Google Voice API to send a text
+     *
+     * @param number
+     * @param text
+     *
+     * @throws Exception
+     */
     public void sendGvMessage(String number, String text) throws Exception {
         final String authToken = getAuthToken();
         JsonObject json = Ion.with(mContext).load("https://www.google.com/voice/sms/send/")
@@ -151,8 +164,10 @@ public class GoogleVoiceManager {
 
     /**
      * Update the read state on GV
+     *
      * @param id - GV message id
      * @param read - 0 = unread, 1 = read
+     *
      * @throws Exception
      */
     public void markGvMessageRead(String id, int read) throws Exception {
@@ -165,8 +180,14 @@ public class GoogleVoiceManager {
                 .setBodyParameter("read", String.valueOf(read))
                 .setBodyParameter("_rnr_se", getRnrse());
     }
-    
-    // refresh the messages that were on the server
+
+    /**
+     * Refresh the messages that were on the server
+     *
+     * @return
+     *
+     * @throws Exception
+     */
     public List<Conversation> retrieveMessages() throws Exception {
         String account = getAccount();
         if (account == null) {

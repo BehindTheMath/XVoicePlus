@@ -15,7 +15,8 @@ public class SmsUtils {
 
     static final String FORMAT_3GPP = "3gpp";
     public static final int OP_WRITE_SMS = 15;
-    private static final String SERVICE_CENTER = "5555555555";   // Fake so we know its a fake message
+    // Fake so we know it's a fake message
+    private static final String SERVICE_CENTER = "5555555555";
 
     static final int MAX_TP_UD_BYTES_BESIDES_HEADER = 248;
 
@@ -245,21 +246,19 @@ public class SmsUtils {
         int units = (int) Math.abs(millis / (60 * 1000 * 15));
         int mask = millis < 0 ? 0x80 : 0x00;
         int result = decToHex(units) | mask;
-        //Log.d(TAG, "units: " + units);
-        //Log.d(TAG, "mask hex: " + bytesToHex((byte) mask));
-        //Log.d(TAG, "result hex: " + bytesToHex((byte) result));
         return result;
     }
 
-    private static String bytesToHex(byte... bytes) {
+    public static String bytesToHex(byte[] bytes) {
         final char[] hexArray = "0123456789ABCDEF".toCharArray();
         char[] hexChars = new char[bytes.length * 2];
+
         for ( int j = 0; j < bytes.length; j++ ) {
             int v = bytes[j] & 0xFF;
             hexChars[j * 2] = hexArray[v >>> 4];
             hexChars[j * 2 + 1] = hexArray[v & 0x0F];
         }
+
         return new String(hexChars);
     }
-
 }
