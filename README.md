@@ -1,5 +1,5 @@
-# XVoicePlus (XVoice++)
-XVoicePlus is an Xposed module that allows you to use standard SMS apps to send and receive messages through Google Voice. When this module is activated, any outgoing SMS messages will be rerouted through Google Voice, and any messages that are received by the Google Voice app will be displayed in SMS apps.
+# XVoice++ (XVoicePlus)
+XVoice++ is an Xposed module that allows you to use standard SMS apps to send and receive messages through Google Voice. When this module is activated, any outgoing SMS messages will be rerouted through Google Voice, and any messages that are received by the Google Voice app will be displayed in SMS apps.
 
 This module is a fork of [runnirr](https://github.com/runnirr)'s original [XVoicePlus (XVoice+)](https://github.com/runnirr/XVoicePlus) module, which is an Xposed implementation of CyanogenMod's VoicePlus. I renamed this module XVoice++ to highlight the difference, although the naming scheme of XVoicePlus is the same.
 
@@ -28,10 +28,10 @@ Once we have an incoming Google Voice message, we broadcast an INCOMING_VOICE in
 Starting with v5.0, the Google Voice app was completely rewritten, and now uses Google Cloud Messaging for push notifications. The module hooks the GCMListenerService to catch the message as it comes in, and broadcasts an INCOMING_VOICE intent to the XVoicePlusService.
 
 ## Known Issues
-* Emojis and accented characters may cause issues.
+* Emojis and accented characters may cause issues. (This should be fixed for incoming messages, as of v3.2.0).
 * There is no support for MMS.
 * There is no way to send SMS via your carrier. Any app that uses SmsManager to send texts will have its messages redirected via Google Voice.
-* Occasionally, messages may show up with the wrong timestamp, or there may be duplicate messages.
+* Occasionally, messages may show up with the wrong timestamp, there may be duplicate messages, or there may be a delay before the messages appear.
 * When I had the default SMS app is set to the AOSP Messaging app (com.android.mms, not to be confused with Google Messenger), the module would not work for outgoing messages. On one device, incoming messages did not work either. I was using version 5.1.1-720affab4e. I'm still not sure what causes it.
 * On one of my test devices, I sometimes experienced a crash of the system process on boot. This did not seem to affect the functionality of the module.
 
@@ -47,6 +47,7 @@ Starting with v5.0, the Google Voice app was completely rewritten, and now uses 
 * [runnirr](https://github.com/runnirr) for creating the original XVoice+
 * [B2OJustin](https://github.com/Justin42) for taking over development of XVoice+
 * [iHelp101](https://github.com/iHelp101) for updating XVoice+ to work with CM12
+* [Jake Hamby](https://github.com/jhamby) (a former engineer at Google, who helped maintain the internal SMS processing code for Android) for providing a lot of information about PDU structure and processing.
 
 ## License
     Copyright © 2017 Behind The Math
