@@ -50,9 +50,11 @@ public class IncomingMessageProcessor {
 
     static void synthesizeMessage(Context context, SharedPrefsManager sharedPrefsManager, GvResponse.Message message) {
         if (!SharedPrefsManager.messageExists(context, message, URI_RECEIVED)) {
+            Log.d(TAG, "Creating fake SMS");
+
             try {
-                byte[] pdu = SmsUtils.createFakeSms(message.phoneNumber, messageWithPrefixSuffix(sharedPrefsManager, message.message), message.date);
-                broadcastMessage(context, pdu);
+                Object[] pdus = SmsUtils.createFakeSms(message.phoneNumber, messageWithPrefixSuffix(sharedPrefsManager, message.message), message.date);
+                broadcastMessage(context, pdus);
             } catch (IOException e) {
                 Log.e(TAG, "IOException when creating fake SMS, ignoring.", e);
             }
@@ -76,17 +78,17 @@ public class IncomingMessageProcessor {
      * by any app, to be notified that there is an incoming SMS.
      *
      * @param context
-     * @param pdu
+     * @param pdus
      */
-    private static void broadcastMessage(Context context, byte[] pdu) {
-        Log.d(TAG, "Creating fake SMS. Broadcasting...");
+    static void broadcastMessage(Context context, Object[] pdus) {
+        Log.d(TAG, "Broadcasting fake SMS...");
         //Log.d(TAG, "Broadcasting pdu " + bytesToHex(pdu));
 
         String deliver_action = "android.provider.Telephony.SMS_DELIVER";
         Intent intent = new Intent()
                 .setAction(deliver_action)
                 .setFlags(0)
-                .putExtra("pdus", new Object[] { pdu })
+                .putExtra("pdus", pdus)
                 .putExtra("format", FORMAT_3GPP);
         context.sendOrderedBroadcast(intent, "android.permission.RECEIVE_SMS");
 
@@ -94,7 +96,7 @@ public class IncomingMessageProcessor {
         intent = new Intent()
                 .setAction(received_action)
                 .setFlags(0)
-                .putExtra("pdus", new Object[] { pdu })
+                .putExtra("pdus", pdus)
                 .putExtra("format", FORMAT_3GPP);
         context.sendOrderedBroadcast(intent, "android.permission.RECEIVE_SMS");
     }
