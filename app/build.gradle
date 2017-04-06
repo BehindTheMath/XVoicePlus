@@ -28,7 +28,7 @@ android {
         targetSdkVersion 22
         versionCode buildVersionCode()
         versionName buildVersionName()
-
+        setProperty("archivesBaseName", "XVoicePlus-$versionName")
     }
 
     buildTypes {
