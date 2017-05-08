@@ -122,14 +122,14 @@ public class SmsUtils {
             int totalNumParts = (int) Math.ceil(bodyBytes.length / (double) MAX_TP_UD_BYTES_BESIDES_HEADER);
             Object[] pdus = new Object[totalNumParts];
 
+            int bodyBytesEnd = 0;
             for(int i = 0; i < totalNumParts; i++) {
                 byte[] header = generateHeader(totalNumParts, i + 1);
 
                 int bodyBytesStart = MAX_TP_UD_BYTES_BESIDES_HEADER * i;
-                int bodyBytesEnd;
                 if (i < totalNumParts - 1) {
                     // If this is not the last PDU, use the maximum amount of bytes
-                    bodyBytesEnd = MAX_TP_UD_BYTES_BESIDES_HEADER;
+                    bodyBytesEnd += MAX_TP_UD_BYTES_BESIDES_HEADER;
                 } else {
                     // If this is the last PDU, use whatever is left
                     bodyBytesEnd = bodyBytes.length;
