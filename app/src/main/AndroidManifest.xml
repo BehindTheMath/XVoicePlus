@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-      package="io.behindthemath.xvoiceplus">
+    package="io.behindthemath.xvoiceplus">
 
     <uses-permission android:name="android.permission.READ_SMS" />
     <uses-permission android:name="android.permission.WRITE_SMS" />
-
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.MANAGE_ACCOUNTS" />
     <uses-permission android:name="android.permission.USE_CREDENTIALS" />
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-
     <uses-permission android:name="android.permission.WRITE_SETTINGS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
-
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
@@ -23,12 +20,18 @@
         android:icon="@mipmap/ic_launcher"
         android:theme="@style/AppTheme">
 
-        <meta-data android:name="xposedmodule" android:value="true"/>
-        <meta-data android:name="xposedminversion" android:value="82+"/>
-        <meta-data android:name="xposeddescription" android:value="@string/app_name"/>
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="82+" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="@string/app_name" />
 
         <activity
-            android:name="io.behindthemath.xvoiceplus.ui.XVoicePlusSetup"
+            android:name=".ui.XVoicePlusSetup"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
             <intent-filter>
@@ -37,23 +40,23 @@
             </intent-filter>
         </activity>
 
-        <service android:name="io.behindthemath.xvoiceplus.XVoicePlusService" />
+        <service android:name=".XVoicePlusService" />
 
-        <receiver android:name="io.behindthemath.xvoiceplus.receivers.MessageEventReceiver">
+        <receiver android:name=".receivers.MessageEventReceiver">
             <intent-filter>
                 <action android:name="io.behindthemath.xvoiceplus.INCOMING_VOICE" />
                 <action android:name="io.behindthemath.xvoiceplus.OUTGOING_SMS" />
             </intent-filter>
         </receiver>
 
-        <receiver android:name="io.behindthemath.xvoiceplus.receivers.BootCompletedReceiver">
+        <receiver android:name=".receivers.BootCompletedReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
 
         <receiver
-            android:name="io.behindthemath.xvoiceplus.receivers.UserPollReceiver"
+            android:name=".receivers.UserPollReceiver"
             android:exported="false">
             <intent-filter>
                 <action android:name="io.behindthemath.xvoiceplus.USER_POLL" />
@@ -63,6 +66,6 @@
         <provider
             android:name=".XVoicePlusRemotePreferenceProvider"
             android:authorities="${applicationId}"
-            android:exported="true"/>
+            android:exported="true" />
     </application>
 </manifest>
