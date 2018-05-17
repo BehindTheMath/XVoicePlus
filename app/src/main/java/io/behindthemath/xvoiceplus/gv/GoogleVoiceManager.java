@@ -15,6 +15,8 @@ import android.util.Log;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import com.koushikdutta.ion.Ion;
 
 import java.util.ArrayList;
@@ -35,7 +37,7 @@ public class GoogleVoiceManager {
 
     private final Context mContext;
     private String mRnrse = null;
-    
+
     public GoogleVoiceManager(Context context) {
         mContext = context;
     }
@@ -47,15 +49,15 @@ public class GoogleVoiceManager {
     private String getAccount() {
         return getSettings().getString("account", null);
     }
-    
+
     public boolean refreshAuth() {
         return getRnrse(true) != null;
     }
-    
+
     private void saveRnrse(String rnrse) {
         getSettings().edit().putString("_rnr_se", rnrse).apply();
     }
-    
+
     private String getRnrse() {
         return getRnrse(false);
     }
@@ -70,7 +72,7 @@ public class GoogleVoiceManager {
         }
         return mRnrse;
     }
-    
+
     /**
      * Fetch the weirdo opaque token Google Voice needs...
      *
@@ -81,9 +83,12 @@ public class GoogleVoiceManager {
     private String fetchRnrSe() throws Exception {
         final String authToken = getAuthToken();
         JsonObject userInfo = Ion.with(mContext).load("https://www.google.com/voice/request/user")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36")
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .asJsonObject()
                 .get();
+
+        Log.d(TAG, "fetchRnrSe: "+userInfo.getAsString());
 
         String rnrse = userInfo.get("r").getAsString();
         verifySmsForwarding(userInfo, authToken, rnrse);
@@ -106,6 +111,7 @@ public class GoogleVoiceManager {
                     if (PhoneNumberUtils.compare(number, phone.get("phoneNumber").getAsString())) {
                         Log.i(TAG, "Disabling SMS forwarding to phone.");
                         Ion.with(mContext).load("https://www.google.com/voice/settings/editForwardingSms/")
+                                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36")
                                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                                 .setBodyParameter("phoneId", entry.getKey())
                                 .setBodyParameter("enabled", "0")
@@ -129,12 +135,12 @@ public class GoogleVoiceManager {
         }
         return null;
     }
-    
+
     private String getAuthToken() throws Exception {
         Bundle bundle = getAccountBundle(mContext, getAccount());
         return bundle.getString(AccountManager.KEY_AUTHTOKEN);
     }
-    
+
     /**
      * Hit the Google Voice API to send a text
      *
@@ -145,21 +151,25 @@ public class GoogleVoiceManager {
      */
     public void sendGvMessage(String number, String text) throws Exception {
         final String authToken = getAuthToken();
-        JsonObject json = Ion.with(mContext).load("https://www.google.com/voice/sms/send/")
+        String response = Ion.with(mContext).load("https://www.google.com/voice/sms/send/")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36")
                 .onHeaders(new GvHeadersCallback(mContext, authToken))
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .setBodyParameter("phoneNumber", number)
                 .setBodyParameter("sendErrorSms", "0")
                 .setBodyParameter("text", text)
                 .setBodyParameter("_rnr_se", getRnrse())
-                .asJsonObject()
+                .asString()
                 .get();
-
-        if (!json.get("ok").getAsBoolean()) {
-            throw new Exception(json.toString());
-        } else {
-            Log.d(TAG, "Message sent with Google Voice successfully");
+        try {
+            boolean isOk = new JsonParser().parse(response).getAsJsonObject().get("ok").getAsBoolean();
+            if (!isOk){
+                throw new Exception(response);
+            }
+        } catch (JsonParseException e){
+            throw new Exception(response);
         }
+        Log.d(TAG, "Message sent with Google Voice successfully");
     }
 
     /**
@@ -174,6 +184,7 @@ public class GoogleVoiceManager {
         final String authToken = getAuthToken();
         Log.d(TAG, "Marking messsage " + id + " as read");
         Ion.with(mContext).load("https://www.google.com/voice/inbox/mark/")
+                .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36")
                 .onHeaders(new GvHeadersCallback(mContext, authToken))
                 .setHeader("Authorization", "GoogleLogin auth=" + authToken)
                 .setBodyParameter("messages", id)
@@ -199,16 +210,19 @@ public class GoogleVoiceManager {
 
         // tokens!
         final String authToken = getAuthToken();
+        try {
+            return Ion.with(mContext).load("https://www.google.com/voice/request/messages")
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.139 Safari/537.36")
+                    .onHeaders(new GvHeadersCallback(mContext, authToken))
+                    .setHeader("Authorization", "GoogleLogin auth=" + authToken)
+                    .as(Payload.class).get().conversations;
 
-        Payload payload = Ion.with(mContext).load("https://www.google.com/voice/request/messages")
-                .onHeaders(new GvHeadersCallback(mContext, authToken))
-                .setHeader("Authorization", "GoogleLogin auth=" + authToken)
-                .as(Payload.class)
-                .get();
-
-        return payload.conversations;
+        } catch (Throwable e){
+            Log.e(TAG, "Unable to retrieve messages: "+e.getMessage(), e);
+            throw e;
+        }
     }
-    
+
     public static void invalidateToken(final Context context, final String account) {
         if (account == null) return;
 

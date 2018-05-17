@@ -228,12 +228,17 @@ public class XVoicePlus implements IXposedHookZygoteInit, IXposedHookLoadPackage
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                         // Index of the callingUid argument
                         final int ARGUMENT_INDEX_CALLING_UID = 14;
+                        final int ARGUMENT_INDEX_INTENT = 2;
                         int callingUid = (int) param.args[ARGUMENT_INDEX_CALLING_UID];
+                        Intent intent = (Intent) param.args[ARGUMENT_INDEX_INTENT];
+
                         // Get our UID
                         int appUid = AndroidAppHelper.currentApplication().getPackageManager()
                                 .getApplicationInfo(XVOICE_PLUS_PACKAGE, PackageManager.GET_META_DATA).uid;
                         // If the broadcast is from us
-                        if ((boolean) callStaticMethod(UserHandle.class, "isSameApp", callingUid, appUid)) {
+                        if (intent.getAction().startsWith("android.provider.Telephony") &&
+                                (boolean) callStaticMethod(UserHandle.class, "isSameApp", callingUid, appUid)) {
+
                             Log.d(TAG, "Hooking broadcast permissions: Overriding callingUid "
                                     + callingUid + " with Process.PHONE_UID (UID 1001)");
                             // Spoof the broadcast as if it's coming from PHONE_UID, so the system will let it through
