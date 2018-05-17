@@ -101,7 +101,7 @@ public class GCMListenerServiceHook extends XC_MethodHook {
             }
 
             final SharedPreferences gvSharedPrefs = new XSharedPreferences(LEGACY_GOOGLE_VOICE_PACKAGE);
-            final String registeredAccounts = gvSharedPrefs.getString("registered_accounts", null);
+            final String registeredAccounts = gvSharedPrefs.getString("accounts", null);
             if (registeredAccounts == null) {
                 Log.e(TAG, "Error accessing registered_accounts from GV SharedPreferences");
                 return false;
